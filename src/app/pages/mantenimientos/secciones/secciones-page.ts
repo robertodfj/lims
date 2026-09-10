@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { PagePlaceholder } from '../../../shared/page-placeholder/page-placeholder';
 
 @Component({
   selector: 'app-secciones-page',
-  template: `<h1>Secciones</h1>`,
+  imports: [PagePlaceholder],
+  template: `<app-page-placeholder title="Secciones" description="Gestión de secciones." />`,
 })
 export class SeccionesPage {}

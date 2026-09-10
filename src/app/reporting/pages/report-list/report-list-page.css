@@ -1,0 +1,8 @@
+.report-list__back {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.report-list__back:hover {
+  text-decoration: underline;
+}

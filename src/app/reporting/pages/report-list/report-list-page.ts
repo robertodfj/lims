@@ -9,6 +9,7 @@ import { NEW_REPORT_ROUTE_ID } from '../../reporting-paths';
   selector: 'app-report-list-page',
   imports: [DatePipe, RouterLink],
   templateUrl: './report-list-page.html',
+  styleUrl: './report-list-page.css',
 })
 export class ReportListPage {
   private readonly repository = inject(REPORT_REPOSITORY);

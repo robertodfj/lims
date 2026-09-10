@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { PagePlaceholder } from '../../../shared/page-placeholder/page-placeholder';
 
 @Component({
   selector: 'app-tablas-dinamicas-page',
-  template: `<h1>Tablas dinámicas</h1>`,
+  imports: [PagePlaceholder],
+  template: `<app-page-placeholder title="Tablas dinámicas" description="Gestión de tablas dinámicas." />`,
 })
 export class TablasDinamicasPage {}

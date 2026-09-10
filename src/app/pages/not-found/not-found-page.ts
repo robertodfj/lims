@@ -5,9 +5,13 @@ import { Router, RouterLink } from '@angular/router';
   selector: 'app-not-found-page',
   imports: [RouterLink],
   template: `
-    <h1>Página no encontrada</h1>
-    <p>La dirección {{ url }} no existe en el LIMS.</p>
-    <p><a routerLink="/dashboard">Ir al dashboard</a></p>
+    <div class="page">
+      <div class="empty-state">
+        <p class="empty-state__title">Página no encontrada</p>
+        <p class="empty-state__desc">La dirección {{ url }} no existe en el LIMS.</p>
+        <a class="btn btn--secondary empty-state__action" routerLink="/dashboard">Ir al dashboard</a>
+      </div>
+    </div>
   `,
 })
 export class NotFoundPage {

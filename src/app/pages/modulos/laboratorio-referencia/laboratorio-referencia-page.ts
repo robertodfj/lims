@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { PagePlaceholder } from '../../../shared/page-placeholder/page-placeholder';
 
 @Component({
   selector: 'app-laboratorio-referencia-page',
-  template: `<h1>Laboratorio de referencia</h1>`,
+  imports: [PagePlaceholder],
+  template: `<app-page-placeholder title="Laboratorio de referencia" description="Gestión de laboratorio de referencia." />`,
 })
 export class LaboratorioReferenciaPage {}

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { PagePlaceholder } from '../../../shared/page-placeholder/page-placeholder';
 
 @Component({
   selector: 'app-soportes-page',
-  template: `<h1>Soportes</h1>`,
+  imports: [PagePlaceholder],
+  template: `<app-page-placeholder title="Soportes" description="Gestión de soportes." />`,
 })
 export class SoportesPage {}

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { PagePlaceholder } from '../../../shared/page-placeholder/page-placeholder';
 
 @Component({
   selector: 'app-microbiologia-page',
-  template: `<h1>Microbiología</h1>`,
+  imports: [PagePlaceholder],
+  template: `<app-page-placeholder title="Microbiología" description="Gestión de microbiología." />`,
 })
 export class MicrobiologiaPage {}
