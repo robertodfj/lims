@@ -29,6 +29,9 @@
                 "input": "public"
               }
             ],
+            "styles": [
+              "src/styles.css"
+            ],
             "plugins": [
               "./esbuild/vue.plugin.ts"
             ],
