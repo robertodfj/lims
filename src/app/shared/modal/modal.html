@@ -1,0 +1,28 @@
+<div class="modal-overlay" [class.is-open]="open()" (click)="requestClose()"></div>
+
+<div
+  class="modal"
+  [class.is-open]="open()"
+  [class.modal--sm]="size() === 'sm'"
+  [class.modal--md]="size() === 'md'"
+  [class.modal--lg]="size() === 'lg'"
+  [class.modal--xl]="size() === 'xl'"
+  [attr.aria-hidden]="!open()"
+  role="dialog"
+  aria-modal="true"
+>
+  <header class="modal__header">
+    <h2 class="modal__title">{{ title() }}</h2>
+    <button type="button" class="btn btn--ghost btn--icon" (click)="requestClose()" aria-label="Cerrar">
+      <app-icon name="x" [size]="16" />
+    </button>
+  </header>
+
+  <div class="modal__body">
+    <ng-content />
+  </div>
+
+  <footer class="modal__footer">
+    <ng-content select="[modalFooter]" />
+  </footer>
+</div>
