@@ -33,6 +33,8 @@ export class SearchableSelect {
   readonly items = input<readonly CatalogItem[]>([]);
   readonly value = input<string | null>(null);
   readonly placeholder = input('Seleccione un elemento de la lista o realice una búsqueda');
+  /** Sustituye el mensaje por defecto de catálogo vacío (p. ej. "Selecciona primero un país."). */
+  readonly emptyMessage = input<string | null>(null);
   readonly valueChange = output<string | null>();
 
   protected readonly open = signal(false);

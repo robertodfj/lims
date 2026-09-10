@@ -31,7 +31,7 @@
           </li>
         } @empty {
           <li class="ss__empty">
-            {{ items().length === 0 ? 'No hay elementos registrados todavía.' : 'Sin resultados para la búsqueda.' }}
+            {{ emptyMessage() ?? (items().length === 0 ? 'No hay elementos registrados todavía.' : 'Sin resultados para la búsqueda.') }}
           </li>
         }
       </ul>
