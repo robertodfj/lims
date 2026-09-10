@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.tecnica-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tecnica-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+}
+
+.tecnica-form__section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.drawer-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-with-action {
+  display: flex;
+  gap: 8px;
+}
+
+.field-with-action .input {
+  flex: 1;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+@media (max-width: 640px) {
+  .drawer-form__row,
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}

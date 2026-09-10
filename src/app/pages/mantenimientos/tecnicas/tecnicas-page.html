@@ -1,0 +1,517 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Técnicas</h1>
+      <p class="page-header__meta">{{ filtered().length }} técnicas registradas</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nueva técnica
+      </button>
+    </div>
+  </div>
+
+  @if (tecnicas() === null) {
+    <p class="page-header__meta">Cargando técnicas…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por nombre o código…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
+        <option value="todos">Todos los estados</option>
+        <option value="activa">Activa</option>
+        <option value="no-activa">No activa</option>
+      </select>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Grupo</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filtered(); track row.tecnica.id) {
+            <tr>
+              <td class="cell-muted">{{ row.tecnica.codigo || '—' }}</td>
+              <td class="cell-primary">{{ row.tecnica.nombre }}</td>
+              <td class="cell-muted">{{ row.grupoNombre }}</td>
+              <td>
+                <span class="badge" [class.badge--success]="!row.tecnica.noActiva" [class.badge--neutral]="row.tecnica.noActiva">
+                  {{ row.tecnica.noActiva ? 'No activa' : 'Activa' }}
+                </span>
+              </td>
+              <td class="is-num">
+                @if (confirmDeleteId() === row.tecnica.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(row.tecnica.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(row.tecnica)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(row.tecnica.id)" aria-label="Eliminar">
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ninguna técnica coincide con los filtros aplicados.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer [open]="drawerOpen()" size="xl" [title]="draft().id ? 'Editar técnica' : 'Nueva técnica'" (closed)="closeDrawer()">
+  <form class="tecnica-form" (ngSubmit)="save()">
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Identificación</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-codigo">ID / Código</label>
+          <div class="field-with-action">
+            <input
+              id="f-codigo"
+              class="input"
+              type="text"
+              [ngModel]="draft().codigo"
+              (ngModelChange)="updateDraft('codigo', $event)"
+              name="codigo"
+            />
+            <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+              Auto
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-codigoTec">Código Tec</label>
+          <input
+            id="f-codigoTec"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().codigoTec"
+            (ngModelChange)="updateDraft('codigoTec', $event)"
+            name="codigoTec"
+          />
+          <span class="field__hint">{{ draft().codigoTec.length }} / 50</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nombre">Nombre</label>
+        <input
+          id="f-nombre"
+          class="input"
+          type="text"
+          required
+          maxlength="180"
+          [ngModel]="draft().nombre"
+          (ngModelChange)="updateDraft('nombre', $event)"
+          name="nombre"
+        />
+        <span class="field__hint">{{ draft().nombre.length }} / 180</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nombreInforme">Nombre en informe</label>
+        <input
+          id="f-nombreInforme"
+          class="input"
+          type="text"
+          maxlength="180"
+          [ngModel]="draft().nombreInforme"
+          (ngModelChange)="updateDraft('nombreInforme', $event)"
+          name="nombreInforme"
+        />
+        <span class="field__hint">{{ draft().nombreInforme.length }} / 180</span>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Clasificación</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Grupo <span class="field__required">*</span></label>
+          <app-searchable-select
+            [items]="grupos()"
+            [value]="draft().grupoId"
+            (valueChange)="updateDraft('grupoId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Subgrupo</label>
+          <app-searchable-select
+            [items]="subgrupos()"
+            [value]="draft().subgrupoId"
+            (valueChange)="updateDraft('subgrupoId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Tipo de resultado <span class="field__required">*</span></label>
+          <app-searchable-select
+            [items]="tiposResultado()"
+            [value]="draft().tipoResultadoId"
+            (valueChange)="updateDraft('tipoResultadoId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-numDecimales">Nº decimales <span class="field__required">*</span></label>
+          <input
+            id="f-numDecimales"
+            class="input"
+            type="number"
+            required
+            min="0"
+            [ngModel]="draft().numDecimales"
+            (ngModelChange)="updateDraft('numDecimales', $event)"
+            name="numDecimales"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-cifrasSignificativas">Cifras significativas</label>
+        <input
+          id="f-cifrasSignificativas"
+          class="input"
+          type="number"
+          min="0"
+          [ngModel]="draft().cifrasSignificativas"
+          (ngModelChange)="updateDraft('cifrasSignificativas', $event)"
+          name="cifrasSignificativas"
+        />
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Presentación</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-ordenImpresion">Orden de impresión</label>
+          <input
+            id="f-ordenImpresion"
+            class="input"
+            type="number"
+            min="0"
+            [ngModel]="draft().ordenImpresion"
+            (ngModelChange)="updateDraft('ordenImpresion', $event)"
+            name="ordenImpresion"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-tiempoRespuesta">Tiempo de respuesta</label>
+          <input
+            id="f-tiempoRespuesta"
+            class="input"
+            type="text"
+            maxlength="20"
+            [ngModel]="draft().tiempoRespuesta"
+            (ngModelChange)="updateDraft('tiempoRespuesta', $event)"
+            name="tiempoRespuesta"
+          />
+          <span class="field__hint">{{ draft().tiempoRespuesta.length }} / 20</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-valorPorDefecto">Valor por defecto</label>
+        <input
+          id="f-valorPorDefecto"
+          class="input"
+          type="text"
+          maxlength="60"
+          [ngModel]="draft().valorPorDefecto"
+          (ngModelChange)="updateDraft('valorPorDefecto', $event)"
+          name="valorPorDefecto"
+        />
+        <span class="field__hint">{{ draft().valorPorDefecto.length }} / 60</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Laboratorio externo</label>
+          <app-searchable-select
+            [items]="laboratoriosExternos()"
+            [value]="draft().laboratorioExternoId"
+            (valueChange)="updateDraft('laboratorioExternoId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Contenedor</label>
+          <app-searchable-select
+            [items]="contenedores()"
+            [value]="draft().contenedorId"
+            (valueChange)="updateDraft('contenedorId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Especies</label>
+        <app-searchable-select
+          [items]="especies()"
+          [value]="draft().especieId"
+          (valueChange)="updateDraft('especieId', $event)"
+        />
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Opciones</h3>
+      <div class="checkbox-grid">
+        <label class="checkbox-field">
+          <input type="checkbox" [ngModel]="draft().acreditado" (ngModelChange)="updateDraft('acreditado', $event)" name="acreditado" />
+          Acreditado
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().incluirEnCatalogo"
+            (ngModelChange)="updateDraft('incluirEnCatalogo', $event)"
+            name="incluirEnCatalogo"
+          />
+          Incluir en catálogo
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().noImprimible"
+            (ngModelChange)="updateDraft('noImprimible', $event)"
+            name="noImprimible"
+          />
+          No imprimible
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" [ngModel]="draft().noActiva" (ngModelChange)="updateDraft('noActiva', $event)" name="noActiva" />
+          No activa
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().noPedibleIndividual"
+            (ngModelChange)="updateDraft('noPedibleIndividual', $event)"
+            name="noPedibleIndividual"
+          />
+          No pedible individual
+        </label>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Requerimientos</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-codigoAuxiliar">Código auxiliar</label>
+          <input
+            id="f-codigoAuxiliar"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().codigoAuxiliar"
+            (ngModelChange)="updateDraft('codigoAuxiliar', $event)"
+            name="codigoAuxiliar"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-nombrePrimer">Nombre primer</label>
+          <input
+            id="f-nombrePrimer"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().nombrePrimer"
+            (ngModelChange)="updateDraft('nombrePrimer', $event)"
+            name="nombrePrimer"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-idControlPositivo">Id control +</label>
+          <input
+            id="f-idControlPositivo"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().idControlPositivo"
+            (ngModelChange)="updateDraft('idControlPositivo', $event)"
+            name="idControlPositivo"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-stockPrimers">Stock primers</label>
+          <input
+            id="f-stockPrimers"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().stockPrimers"
+            (ngModelChange)="updateDraft('stockPrimers', $event)"
+            name="stockPrimers"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-programaTermociclador">Programa termociclador</label>
+          <input
+            id="f-programaTermociclador"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().programaTermociclador"
+            (ngModelChange)="updateDraft('programaTermociclador', $event)"
+            name="programaTermociclador"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-dnm">Dnm</label>
+          <input
+            id="f-dnm"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().dnm"
+            (ngModelChange)="updateDraft('dnm', $event)"
+            name="dnm"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-metodo">Método</label>
+          <input
+            id="f-metodo"
+            class="input"
+            type="text"
+            [ngModel]="draft().metodo"
+            (ngModelChange)="updateDraft('metodo', $event)"
+            name="metodo"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-tamanoAmplicon">Tamaño amplicón</label>
+          <input
+            id="f-tamanoAmplicon"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().tamanoAmplicon"
+            (ngModelChange)="updateDraft('tamanoAmplicon', $event)"
+            name="tamanoAmplicon"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-codigoGenero">Código género</label>
+          <input
+            id="f-codigoGenero"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().codigoGenero"
+            (ngModelChange)="updateDraft('codigoGenero', $event)"
+            name="codigoGenero"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-tipoMuestraAnalisis">Tipo muestra análisis</label>
+          <input
+            id="f-tipoMuestraAnalisis"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().tipoMuestraAnalisis"
+            (ngModelChange)="updateDraft('tipoMuestraAnalisis', $event)"
+            name="tipoMuestraAnalisis"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-tecnicasAuxiliares">Técnicas auxiliares</label>
+        <input
+          id="f-tecnicasAuxiliares"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().tecnicasAuxiliares"
+          (ngModelChange)="updateDraft('tecnicasAuxiliares', $event)"
+          name="tecnicasAuxiliares"
+        />
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Textos de edición</h3>
+      <div class="field">
+        <label class="field__label" for="f-cabeceraEdicion">Cabecera edición</label>
+        <textarea
+          id="f-cabeceraEdicion"
+          class="textarea"
+          [ngModel]="draft().cabeceraEdicion"
+          (ngModelChange)="updateDraft('cabeceraEdicion', $event)"
+          name="cabeceraEdicion"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-comentarioEdicion">Comentario edición</label>
+        <textarea
+          id="f-comentarioEdicion"
+          class="textarea"
+          [ngModel]="draft().comentarioEdicion"
+          (ngModelChange)="updateDraft('comentarioEdicion', $event)"
+          name="comentarioEdicion"
+        ></textarea>
+      </div>
+    </section>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>
