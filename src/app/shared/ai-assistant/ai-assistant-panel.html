@@ -1,0 +1,42 @@
+<div class="ai-panel__inner">
+  <header class="ai-panel__header">
+    <span class="ai-panel__title">
+      <app-icon name="sparkle" [size]="15" />
+      Asistente IA
+    </span>
+    @if (!pinned()) {
+      <button type="button" class="btn btn--ghost btn--icon" (click)="store.toggle()" aria-label="Cerrar asistente">
+        <app-icon name="x" [size]="15" />
+      </button>
+    }
+  </header>
+
+  <div class="ai-panel__messages" #messagesEl>
+    @for (message of store.messages(); track message.id) {
+      <div class="ai-msg" [class.ai-msg--user]="message.role === 'user'">
+        <p>{{ message.text }}</p>
+      </div>
+    }
+    @if (store.thinking()) {
+      <div class="ai-msg ai-msg--thinking">
+        <span></span><span></span><span></span>
+      </div>
+    }
+  </div>
+
+  <form class="ai-panel__composer" (ngSubmit)="submit()">
+    <input
+      #composerEl
+      class="input"
+      type="text"
+      name="draft"
+      placeholder="Dime la acción que quieres realizar…"
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      autocomplete="off"
+    />
+    <button type="submit" class="btn btn--primary btn--icon" [disabled]="!draft().trim()" aria-label="Enviar">
+      <app-icon name="send" [size]="14" />
+    </button>
+  </form>
+</div>

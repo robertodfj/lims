@@ -19,6 +19,17 @@
           <app-icon name="search" [size]="15" />
           <input class="input" type="text" placeholder="Buscar…" />
         </label>
+        @if (!aiPinned()) {
+          <button
+            type="button"
+            class="account-btn"
+            [class.is-active]="aiStore.open()"
+            (click)="aiStore.toggle()"
+            aria-label="Asistente IA"
+          >
+            <app-icon name="sparkle" [size]="15" />
+          </button>
+        }
         <button type="button" class="account-btn" aria-label="Cuenta">
           <app-icon name="user" [size]="15" />
         </button>
@@ -29,4 +40,8 @@
       <router-outlet />
     </main>
   </div>
+
+  <aside class="ai-panel" [class.is-open]="aiPanelOpen()">
+    <app-ai-assistant-panel [isOpen]="aiPanelOpen()" [pinned]="aiPinned()" />
+  </aside>
 </div>

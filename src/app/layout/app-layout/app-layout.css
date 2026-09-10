@@ -79,7 +79,28 @@
   color: var(--accent);
 }
 
+.account-btn.is-active {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
 .shell__content {
   flex: 1;
   overflow-y: auto;
+}
+
+.ai-panel {
+  width: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border-left: 1px solid transparent;
+  transition:
+    width var(--t-base) var(--ease),
+    border-color var(--t-base) var(--ease);
+}
+
+.ai-panel.is-open {
+  width: 320px;
+  border-left-color: var(--border);
 }

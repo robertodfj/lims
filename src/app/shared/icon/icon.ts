@@ -18,7 +18,9 @@ export type IconName =
   | 'arrow-up-down'
   | 'check'
   | 'user'
-  | 'inbox';
+  | 'inbox'
+  | 'sparkle'
+  | 'send';
 
 /** Set mínimo de iconos de línea (20x20, trazo 1.6) usado en toda la app. */
 @Component({
@@ -112,6 +114,17 @@ export type IconName =
           <path d="M3.5 11.5h4l1.3 2h2.4l1.3-2h4" />
           <path d="M3.5 11.5 5 4.8A1 1 0 0 1 6 4h8a1 1 0 0 1 1 .96l1.5 6.54" />
           <path d="M3.5 11.5V15a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3.5" />
+        }
+        @case ('sparkle') {
+          <path
+            d="M10 2.5c.4 2.6 1 4.1 2 5.1s2.5 1.6 5.1 2c-2.6.4-4.1 1-5.1 2s-1.6 2.5-2 5.1c-.4-2.6-1-4.1-2-5.1s-2.5-1.6-5.1-2c2.6-.4 4.1-1 5.1-2s1.6-2.5 2-5.1z"
+            fill="currentColor"
+            stroke="none"
+          />
+        }
+        @case ('send') {
+          <path d="M17 3L3 9.2l5.3 2 2 5.3L17 3z" />
+          <path d="M8.3 11.2 17 3" />
         }
       }
     </svg>
