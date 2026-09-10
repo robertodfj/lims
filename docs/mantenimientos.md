@@ -309,7 +309,8 @@ muestra. Se referencian desde el campo **Contenedor** de Técnicas.
 > **Tipos de Muestra de Microbiología** y, en general, todo lo específico de
 > **Microbiología** (tabla de tipos de muestra propia de ese módulo). Queda
 > fuera del alcance actual — no se construye pantalla ni modelo para ello por
-> ahora.
+> ahora. Ver también [Pantallas retiradas temporalmente](#pantallas-retiradas-temporalmente),
+> donde se detalla que la entrada de menú de Microbiología se ha eliminado.
 
 ---
 
@@ -392,3 +393,79 @@ resultado.
 - **Listado de pruebas**: relación de las pruebas (técnicas) que este
   laboratorio de referencia realiza, para poder derivarlas desde el propio
   sistema.
+
+---
+
+## Sexo / especie
+
+### Concepto
+
+Combinaciones de sexo/especie seleccionables desde la Historia clínica del
+paciente (Mantenimientos / Base de pacientes). En un laboratorio veterinario
+sirve para combinar especie y sexo (p. ej. "Macho — Canino"); en humana basta
+con un valor simple ("Mujer", "Hombre").
+
+### Campos
+
+- **Código**: el correspondiente al registro (hueco libre, siguiente al
+  último, o número concreto).
+- **Sexo / Especie**: el texto que identifica la combinación.
+
+---
+
+## Base de pacientes (Historia clínica)
+
+### Concepto
+
+Ficha del paciente: sus datos personales, de contacto y administrativos,
+además de un conjunto de campos auxiliares libres para necesidades propias
+de cada laboratorio.
+
+### Campos
+
+- **Historia clínica**: identifica al paciente en este sistema, igual que un
+  código (hueco libre, siguiente al último, o número concreto).
+- **Apellidos**: obligatorio. Identifica al paciente junto con el nombre.
+- **Nombre**: nombre del paciente.
+- **Fecha de nacimiento**: fecha de nacimiento del paciente.
+- **Sexo / Especie**: se selecciona del catálogo de Sexo / especie.
+- **Dni**: documento de identidad del paciente.
+- **Domicilio / Población / Provincia / CP**: dirección del paciente.
+- **Teléfono / Telefono2 / Móvil / E-Mail / Fax**: datos de contacto.
+- **Sociedad**: compañía a la que pertenece el paciente, del catálogo de
+  Sociedades.
+- **Historia Clínica Host**: número de historia clínica en el sistema
+  hospitalario/externo (host), cuando el paciente procede de uno.
+- **Auxiliar5 … Auxiliar10**: campos libres adicionales, sin un uso fijo
+  predefinido, para necesidades propias de cada laboratorio.
+- **Observaciones**: campo libre para información adicional.
+
+---
+
+## Pantallas retiradas temporalmente
+
+Las siguientes pantallas de Mantenimientos se han quitado del menú (no había
+llegado a construirse nada más que un marcador de posición vacío en ninguna
+de ellas). Se retiran hasta tener claros sus campos; cuando se retomen, hay
+que volver a añadir su entrada en `main-navigation.ts` y su ruta en
+`mantenimientos.routes.ts`.
+
+- **Facturación**: sin especificación de campos todavía. Pendiente de
+  definir qué se gestiona aquí (tarifas, precios por técnica/compañía,
+  ciclos de facturación, etc. — hay referencias sueltas a "Tarifa aplicada"
+  y "Valor Punto" en Sociedades, pero no una pantalla de mantenimiento
+  propia).
+- **Tablas dinámicas**: sin especificación de campos todavía.
+- **Textos codificados**: sin especificación de campos todavía.
+- **Microbiología**: aparcada explícitamente (ver nota más arriba, en
+  Contenedores). Pendiente de definir su tabla de tipos de muestra propia y
+  el resto de comportamiento específico del módulo.
+- **Tipos de muestra**: la pantalla de mantenimiento se retira, pero el
+  catálogo `tipos-muestra.json` se mantiene y lo sigue usando Contenedores
+  internamente (campo "Tipo de Muestra"). Pendiente de definir los campos
+  de esta pantalla y reconstruirla con CRUD completo.
+- **Hojas de trabajo**: sus campos ya están documentados más arriba en este
+  mismo archivo (ver [Hojas de trabajo personalizadas](#hojas-de-trabajo-personalizadas)
+  y [Hojas de trabajo agrupadas](#hojas-de-trabajo-agrupadas)), pero la
+  pantalla se retira por ahora — falta decidir si se construyen como una
+  sola pantalla con pestañas o como dos pantallas independientes.

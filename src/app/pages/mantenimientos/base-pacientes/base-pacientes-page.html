@@ -1,0 +1,460 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Base de pacientes</h1>
+      <p class="page-header__meta">Historia clínica de los pacientes: datos personales, de contacto y administrativos.</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo paciente
+      </button>
+    </div>
+  </div>
+
+  @if (pacientes() === null) {
+    <p class="page-header__meta">Cargando pacientes…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por historia clínica, apellidos, nombre o DNI…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Historia clínica</th>
+            <th scope="col">Apellidos</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Fecha de nacimiento</th>
+            <th scope="col">DNI</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (paciente of filtered(); track paciente.id) {
+            <tr>
+              <td class="cell-muted">{{ paciente.historiaClinica || '—' }}</td>
+              <td class="cell-primary">{{ paciente.apellidos }}</td>
+              <td class="cell-muted">{{ paciente.nombre || '—' }}</td>
+              <td class="cell-muted">{{ paciente.fechaNacimiento || '—' }}</td>
+              <td class="cell-muted">{{ paciente.dni || '—' }}</td>
+              <td class="cell-muted">{{ paciente.telefono || '—' }}</td>
+              <td class="is-num">
+                @if (confirmDeleteId() === paciente.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(paciente.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(paciente)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn--danger-ghost btn--icon btn--sm"
+                      (click)="requestDelete(paciente.id)"
+                      aria-label="Eliminar"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ningún paciente coincide con la búsqueda.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer
+  [open]="drawerOpen()"
+  size="xl"
+  [title]="draft().id ? 'Editar historia clínica' : 'Nueva historia clínica'"
+  (closed)="closeDrawer()"
+>
+  <form class="paciente-form" (ngSubmit)="save()">
+    <section class="paciente-form__section">
+      <h3 class="section-title">Datos personales</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-historiaClinica">Historia clínica</label>
+        <div class="field-with-action">
+          <input
+            id="f-historiaClinica"
+            class="input"
+            type="text"
+            [ngModel]="draft().historiaClinica"
+            (ngModelChange)="updateDraft('historiaClinica', $event)"
+            name="historiaClinica"
+          />
+          <button
+            type="button"
+            class="btn btn--secondary btn--sm"
+            [disabled]="generatingHistoriaClinica()"
+            (click)="generateHistoriaClinica()"
+          >
+            Auto
+          </button>
+        </div>
+        <span class="field__hint">Identifica al paciente en este sistema.</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-apellidos">Apellidos <span class="field__required">*</span></label>
+          <input
+            id="f-apellidos"
+            class="input"
+            type="text"
+            required
+            maxlength="255"
+            [ngModel]="draft().apellidos"
+            (ngModelChange)="updateDraft('apellidos', $event)"
+            name="apellidos"
+          />
+          <span class="field__hint">{{ draft().apellidos.length }} / 255</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-nombre">Nombre</label>
+          <input
+            id="f-nombre"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().nombre"
+            (ngModelChange)="updateDraft('nombre', $event)"
+            name="nombre"
+          />
+          <span class="field__hint">{{ draft().nombre.length }} / 255</span>
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-fechaNacimiento">Fecha de nacimiento</label>
+          <input
+            id="f-fechaNacimiento"
+            class="input"
+            type="date"
+            [ngModel]="draft().fechaNacimiento"
+            (ngModelChange)="updateDraft('fechaNacimiento', $event)"
+            name="fechaNacimiento"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Sexo / Especie</label>
+          <app-searchable-select
+            [items]="sexosEspecies()"
+            [value]="draft().sexoEspecieId"
+            (valueChange)="updateDraft('sexoEspecieId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-dni">Dni</label>
+        <input
+          id="f-dni"
+          class="input"
+          type="text"
+          maxlength="25"
+          [ngModel]="draft().dni"
+          (ngModelChange)="updateDraft('dni', $event)"
+          name="dni"
+        />
+        <span class="field__hint">{{ draft().dni.length }} / 25</span>
+      </div>
+    </section>
+
+    <section class="paciente-form__section">
+      <h3 class="section-title">Domicilio</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-domicilio">Domicilio</label>
+        <input
+          id="f-domicilio"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().domicilio"
+          (ngModelChange)="updateDraft('domicilio', $event)"
+          name="domicilio"
+        />
+        <span class="field__hint">{{ draft().domicilio.length }} / 255</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-poblacion">Población</label>
+          <input
+            id="f-poblacion"
+            class="input"
+            type="text"
+            maxlength="100"
+            [ngModel]="draft().poblacion"
+            (ngModelChange)="updateDraft('poblacion', $event)"
+            name="poblacion"
+          />
+          <span class="field__hint">{{ draft().poblacion.length }} / 100</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-cp">Cp</label>
+          <input
+            id="f-cp"
+            class="input"
+            type="text"
+            maxlength="7"
+            [ngModel]="draft().cp"
+            (ngModelChange)="updateDraft('cp', $event)"
+            name="cp"
+          />
+          <span class="field__hint">{{ draft().cp.length }} / 7</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Provincia</label>
+        <app-searchable-select
+          [items]="provincias()"
+          [value]="draft().provinciaId"
+          (valueChange)="updateDraft('provinciaId', $event)"
+        />
+      </div>
+    </section>
+
+    <section class="paciente-form__section">
+      <h3 class="section-title">Contacto</h3>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-telefono">Teléfono</label>
+          <input
+            id="f-telefono"
+            class="input"
+            type="text"
+            maxlength="25"
+            [ngModel]="draft().telefono"
+            (ngModelChange)="updateDraft('telefono', $event)"
+            name="telefono"
+          />
+          <span class="field__hint">{{ draft().telefono.length }} / 25</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-telefono2">Telefono2</label>
+          <input
+            id="f-telefono2"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().telefono2"
+            (ngModelChange)="updateDraft('telefono2', $event)"
+            name="telefono2"
+          />
+          <span class="field__hint">{{ draft().telefono2.length }} / 50</span>
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-movil">Móvil</label>
+          <input
+            id="f-movil"
+            class="input"
+            type="text"
+            maxlength="25"
+            [ngModel]="draft().movil"
+            (ngModelChange)="updateDraft('movil', $event)"
+            name="movil"
+          />
+          <span class="field__hint">{{ draft().movil.length }} / 25</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-email">E-Mail</label>
+          <input
+            id="f-email"
+            class="input"
+            type="email"
+            maxlength="255"
+            [ngModel]="draft().email"
+            (ngModelChange)="updateDraft('email', $event)"
+            name="email"
+          />
+          <span class="field__hint">{{ draft().email.length }} / 255</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-fax">Fax</label>
+        <input
+          id="f-fax"
+          class="input"
+          type="text"
+          maxlength="50"
+          [ngModel]="draft().fax"
+          (ngModelChange)="updateDraft('fax', $event)"
+          name="fax"
+        />
+        <span class="field__hint">{{ draft().fax.length }} / 50</span>
+      </div>
+    </section>
+
+    <section class="paciente-form__section">
+      <h3 class="section-title">Datos clínicos y administrativos</h3>
+
+      <div class="field">
+        <label class="field__label">Sociedad</label>
+        <app-searchable-select
+          [items]="sociedades()"
+          [value]="draft().sociedadId"
+          (valueChange)="updateDraft('sociedadId', $event)"
+        />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-historiaClinicaHost">Historia Clínica Host</label>
+        <input
+          id="f-historiaClinicaHost"
+          class="input"
+          type="text"
+          maxlength="50"
+          [ngModel]="draft().historiaClinicaHost"
+          (ngModelChange)="updateDraft('historiaClinicaHost', $event)"
+          name="historiaClinicaHost"
+        />
+        <span class="field__hint">{{ draft().historiaClinicaHost.length }} / 50</span>
+      </div>
+    </section>
+
+    <section class="paciente-form__section">
+      <h3 class="section-title">Campos auxiliares</h3>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-auxiliar5">Auxiliar5</label>
+          <input
+            id="f-auxiliar5"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar5"
+            (ngModelChange)="updateDraft('auxiliar5', $event)"
+            name="auxiliar5"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-auxiliar6">Auxiliar6</label>
+          <input
+            id="f-auxiliar6"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar6"
+            (ngModelChange)="updateDraft('auxiliar6', $event)"
+            name="auxiliar6"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-auxiliar7">Auxiliar7</label>
+          <input
+            id="f-auxiliar7"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar7"
+            (ngModelChange)="updateDraft('auxiliar7', $event)"
+            name="auxiliar7"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-auxiliar8">Auxiliar8</label>
+          <input
+            id="f-auxiliar8"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar8"
+            (ngModelChange)="updateDraft('auxiliar8', $event)"
+            name="auxiliar8"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-auxiliar9">Auxiliar9</label>
+          <input
+            id="f-auxiliar9"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar9"
+            (ngModelChange)="updateDraft('auxiliar9', $event)"
+            name="auxiliar9"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-auxiliar10">Auxiliar10</label>
+          <input
+            id="f-auxiliar10"
+            class="input"
+            type="text"
+            maxlength="255"
+            [ngModel]="draft().auxiliar10"
+            (ngModelChange)="updateDraft('auxiliar10', $event)"
+            name="auxiliar10"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="paciente-form__section">
+      <h3 class="section-title">Observaciones</h3>
+      <div class="field">
+        <textarea
+          id="f-observaciones"
+          class="textarea"
+          [ngModel]="draft().observaciones"
+          (ngModelChange)="updateDraft('observaciones', $event)"
+          name="observaciones"
+        ></textarea>
+      </div>
+    </section>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>

@@ -1,0 +1,130 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Sexo / especie</h1>
+      <p class="page-header__meta">
+        Combinaciones de sexo/especie seleccionables en la Historia clínica del paciente.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo registro
+      </button>
+    </div>
+  </div>
+
+  @if (registros() === null) {
+    <p class="page-header__meta">Cargando…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por texto o código…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Sexo / Especie</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (registro of filtered(); track registro.id) {
+            <tr>
+              <td class="cell-muted">{{ registro.codigo }}</td>
+              <td class="cell-primary">{{ registro.sexoEspecie }}</td>
+              <td class="is-num">
+                @if (confirmDeleteId() === registro.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(registro.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(registro)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn--danger-ghost btn--icon btn--sm"
+                      (click)="requestDelete(registro.id)"
+                      aria-label="Eliminar"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ningún registro coincide con la búsqueda.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar sexo / especie' : 'Nuevo sexo / especie'" (closed)="closeDrawer()">
+  <form class="drawer-form" (ngSubmit)="save()">
+    <div class="field">
+      <label class="field__label" for="f-codigo">Código</label>
+      <div class="field-with-action">
+        <input
+          id="f-codigo"
+          class="input"
+          type="text"
+          [ngModel]="draft().codigo"
+          (ngModelChange)="updateDraft('codigo', $event)"
+          name="codigo"
+        />
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+          Auto
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-sexoEspecie">Sexo / Especie <span class="field__required">*</span></label>
+      <input
+        id="f-sexoEspecie"
+        class="input"
+        type="text"
+        required
+        maxlength="120"
+        [ngModel]="draft().sexoEspecie"
+        (ngModelChange)="updateDraft('sexoEspecie', $event)"
+        name="sexoEspecie"
+      />
+    </div>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>

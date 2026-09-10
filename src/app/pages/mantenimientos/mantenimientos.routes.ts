@@ -43,16 +43,6 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     loadComponent: () => import('./contenedores/contenedores-page').then((m) => m.ContenedoresPage),
   },
   {
-    path: 'tipos-muestra',
-    title: 'Tipos de muestra',
-    loadComponent: () => import('./tipos-muestra/tipos-muestra-page').then((m) => m.TiposMuestraPage),
-  },
-  {
-    path: 'hojas-trabajo',
-    title: 'Hojas de trabajo',
-    loadComponent: () => import('./hojas-trabajo/hojas-trabajo-page').then((m) => m.HojasTrabajoMantenimientoPage),
-  },
-  {
     path: 'comentarios',
     title: 'Comentarios',
     loadComponent: () => import('./comentarios/comentarios-page').then((m) => m.ComentariosPage),
@@ -61,11 +51,6 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     path: 'laboratorios-referencia',
     title: 'Laboratorios de referencia',
     loadComponent: () => import('./laboratorios-referencia/laboratorios-referencia-page').then((m) => m.LaboratoriosReferenciaPage),
-  },
-  {
-    path: 'microbiologia',
-    title: 'Microbiología',
-    loadComponent: () => import('./microbiologia/microbiologia-page').then((m) => m.MicrobiologiaPage),
   },
   {
     path: 'grupos-tecnicas',
@@ -88,23 +73,8 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     loadComponent: () => import('./resultados-alfabeticos/resultados-alfabeticos-page').then((m) => m.ResultadosAlfabeticosPage),
   },
   {
-    path: 'textos-codificados',
-    title: 'Textos codificados',
-    loadComponent: () => import('./textos-codificados/textos-codificados-page').then((m) => m.TextosCodificadosPage),
-  },
-  {
     path: 'sexo-especie',
     title: 'Sexo / especie',
     loadComponent: () => import('./sexo-especie/sexo-especie-page').then((m) => m.SexoEspeciePage),
-  },
-  {
-    path: 'facturacion',
-    title: 'Facturación',
-    loadComponent: () => import('./facturacion/facturacion-page').then((m) => m.FacturacionPage),
-  },
-  {
-    path: 'tablas-dinamicas',
-    title: 'Tablas dinámicas',
-    loadComponent: () => import('./tablas-dinamicas/tablas-dinamicas-page').then((m) => m.TablasDinamicasPage),
   },
 ];
