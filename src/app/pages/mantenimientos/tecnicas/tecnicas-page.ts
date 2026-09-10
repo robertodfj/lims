@@ -4,6 +4,10 @@ import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { CONTENEDOR_REPOSITORY } from '../contenedores/contenedores.tokens';
+import { GRUPO_REPOSITORY } from '../grupos-tecnicas/grupos-tecnicas.tokens';
+import { LABORATORIO_REFERENCIA_REPOSITORY } from '../laboratorios-referencia/laboratorios-referencia.tokens';
+import { SUBGRUPO_REPOSITORY } from '../subgrupos/subgrupos.tokens';
 import { createEmptyTecnica, Tecnica } from './tecnica.model';
 import { TECNICA_REPOSITORY } from './tecnicas.tokens';
 
@@ -19,6 +23,10 @@ type EstadoFilter = 'todos' | 'activa' | 'no-activa';
 export class TecnicasPage {
   private readonly repository = inject(TECNICA_REPOSITORY);
   private readonly catalogService = inject(CatalogService);
+  private readonly contenedorRepository = inject(CONTENEDOR_REPOSITORY);
+  private readonly laboratorioReferenciaRepository = inject(LABORATORIO_REFERENCIA_REPOSITORY);
+  private readonly grupoRepository = inject(GRUPO_REPOSITORY);
+  private readonly subgrupoRepository = inject(SUBGRUPO_REPOSITORY);
 
   protected readonly tecnicas = signal<Tecnica[] | null>(null);
 
@@ -132,18 +140,28 @@ export class TecnicasPage {
 
   private async loadCatalogs(): Promise<void> {
     const [grupos, subgrupos, tiposResultado, laboratoriosExternos, contenedores, especies] = await Promise.all([
-      this.catalogService.load('grupos'),
-      this.catalogService.load('subgrupos'),
+      this.grupoRepository.list(),
+      this.subgrupoRepository.list(),
       this.catalogService.load('tipos-resultado'),
-      this.catalogService.load('laboratorios-externos'),
-      this.catalogService.load('contenedores'),
+      this.laboratorioReferenciaRepository.list(),
+      this.contenedorRepository.list(),
       this.catalogService.load('especies'),
     ]);
-    this.grupos.set(grupos);
-    this.subgrupos.set(subgrupos);
+    this.grupos.set(grupos.map((grupo) => ({ id: grupo.id, nombre: grupo.codigo ? `${grupo.codigo} — ${grupo.nombre}` : grupo.nombre })));
+    this.subgrupos.set(
+      subgrupos.map((subgrupo) => ({
+        id: subgrupo.id,
+        nombre: subgrupo.codigo ? `${subgrupo.codigo} — ${subgrupo.nombre}` : subgrupo.nombre,
+      })),
+    );
     this.tiposResultado.set(tiposResultado);
-    this.laboratoriosExternos.set(laboratoriosExternos);
-    this.contenedores.set(contenedores);
+    this.laboratoriosExternos.set(
+      laboratoriosExternos.map((laboratorio) => ({
+        id: laboratorio.id,
+        nombre: laboratorio.codigo ? `${laboratorio.codigo} — ${laboratorio.nombre}` : laboratorio.nombre,
+      })),
+    );
+    this.contenedores.set(contenedores.map((contenedor) => ({ id: contenedor.id, nombre: contenedor.nombre })));
     this.especies.set(especies);
   }
 }

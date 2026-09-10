@@ -1,0 +1,8 @@
+[
+  { "id": "sangre", "nombre": "Sangre" },
+  { "id": "suero", "nombre": "Suero" },
+  { "id": "plasma", "nombre": "Plasma" },
+  { "id": "orina", "nombre": "Orina" },
+  { "id": "heces", "nombre": "Heces" },
+  { "id": "hisopo", "nombre": "Hisopo" }
+]

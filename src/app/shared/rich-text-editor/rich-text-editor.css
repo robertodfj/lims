@@ -1,0 +1,103 @@
+:host {
+  display: block;
+}
+
+.rte {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.rte__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+  flex-wrap: wrap;
+}
+
+.rte__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.rte__btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.rte__btn--underline {
+  text-decoration: underline;
+}
+
+.rte__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-strong);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.rte__color {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.rte__color:hover {
+  background: var(--surface-hover);
+}
+
+.rte__color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: conic-gradient(red, orange, yellow, green, blue, violet, red);
+  pointer-events: none;
+}
+
+.rte__color input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+
+.rte__editor {
+  min-height: 140px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.rte__editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-tertiary);
+}

@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.drawer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawer-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+@media (max-width: 640px) {
+  .drawer-form__row {
+    grid-template-columns: 1fr;
+  }
+}

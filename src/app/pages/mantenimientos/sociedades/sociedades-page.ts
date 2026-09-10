@@ -4,6 +4,7 @@ import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { DESTINO_REPOSITORY } from '../destino-informes/destinos.tokens';
 import { createEmptySociedad, Sociedad } from './sociedad.model';
 import { SOCIEDAD_REPOSITORY } from './sociedades.tokens';
 
@@ -23,6 +24,7 @@ type EstadoFilter = 'todos' | 'activa' | 'no-activa';
 export class SociedadesPage {
   private readonly repository = inject(SOCIEDAD_REPOSITORY);
   private readonly catalogService = inject(CatalogService);
+  private readonly destinoRepository = inject(DESTINO_REPOSITORY);
 
   protected readonly sociedades = signal<Sociedad[] | null>(null);
 
@@ -129,13 +131,13 @@ export class SociedadesPage {
       this.catalogService.load('tarifas'),
       this.catalogService.load('estados-facturacion'),
       this.catalogService.load('formas-pago'),
-      this.catalogService.load('destinos'),
+      this.destinoRepository.list(),
     ]);
     this.paises.set(paises);
     this.provincias.set(provincias);
     this.tarifas.set(tarifas);
     this.estadosFacturacion.set(estadosFacturacion);
     this.formasPago.set(formasPago);
-    this.destinos.set(destinos);
+    this.destinos.set(destinos.map((destino) => ({ id: destino.id, nombre: `${destino.codigo} — ${destino.descripcion}` })));
   }
 }

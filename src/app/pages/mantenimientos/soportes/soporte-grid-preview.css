@@ -1,0 +1,43 @@
+:host {
+  display: inline-block;
+}
+
+.sgp {
+  display: inline-flex;
+  padding: 10px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.sgp--sm {
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.sgp__grid {
+  display: grid;
+  gap: 4px;
+  max-width: 120px;
+  max-height: 120px;
+}
+
+.sgp--sm .sgp__grid {
+  gap: 1.5px;
+  max-width: 34px;
+  max-height: 34px;
+}
+
+.sgp__hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+}
+
+.sgp--sm .sgp__hole {
+  width: 4px;
+  height: 4px;
+  border-width: 1.5px;
+}

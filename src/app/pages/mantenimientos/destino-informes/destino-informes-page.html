@@ -1,0 +1,188 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Destino de informes</h1>
+      <p class="page-header__meta">Distribuidor automático de informes: dónde y cómo se envían los resultados.</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo destino
+      </button>
+    </div>
+  </div>
+
+  @if (destinos() === null) {
+    <p class="page-header__meta">Cargando destinos…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por descripción o código…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
+        <option value="todos">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="no-activo">No activo</option>
+      </select>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Descripción</th>
+            <th scope="col" class="is-num">Orden</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (destino of filtered(); track destino.id) {
+            <tr>
+              <td class="cell-muted">{{ destino.codigo }}</td>
+              <td class="cell-primary">{{ destino.descripcion }}</td>
+              <td class="is-num cell-muted">{{ destino.orden ?? '—' }}</td>
+              <td>
+                <span class="badge" [class.badge--success]="!destino.noActivo" [class.badge--neutral]="destino.noActivo">
+                  {{ destino.noActivo ? 'No activo' : 'Activo' }}
+                </span>
+              </td>
+              <td class="is-num">
+                @if (confirmDeleteId() === destino.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(destino.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(destino)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(destino.id)" aria-label="Eliminar">
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ningún destino coincide con los filtros aplicados.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar destino' : 'Nuevo destino'" (closed)="closeDrawer()">
+  <form class="drawer-form" (ngSubmit)="save()">
+    <div class="field">
+      <label class="field__label" for="f-codigo">Código</label>
+      <div class="field-with-action">
+        <input
+          id="f-codigo"
+          class="input"
+          type="text"
+          [ngModel]="draft().codigo"
+          (ngModelChange)="updateDraft('codigo', $event)"
+          name="codigo"
+        />
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+          Auto
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-descripcion">Descripción <span class="field__required">*</span></label>
+      <input
+        id="f-descripcion"
+        class="input"
+        type="text"
+        required
+        maxlength="100"
+        [ngModel]="draft().descripcion"
+        (ngModelChange)="updateDraft('descripcion', $event)"
+        name="descripcion"
+      />
+      <span class="field__hint">{{ draft().descripcion.length }} / 100</span>
+    </div>
+
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label" for="f-orden">Orden</label>
+        <input
+          id="f-orden"
+          class="input"
+          type="number"
+          min="0"
+          [ngModel]="draft().orden"
+          (ngModelChange)="updateDraft('orden', $event)"
+          name="orden"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label">Destino asociado</label>
+        <app-searchable-select
+          [items]="destinosAsociables()"
+          [value]="draft().destinoAsociadoId"
+          (valueChange)="updateDraft('destinoAsociadoId', $event)"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-observaciones">Observaciones</label>
+      <textarea
+        id="f-observaciones"
+        class="textarea"
+        [ngModel]="draft().observaciones"
+        (ngModelChange)="updateDraft('observaciones', $event)"
+        name="observaciones"
+      ></textarea>
+    </div>
+
+    <div class="checkbox-grid">
+      <label class="checkbox-field">
+        <input
+          type="checkbox"
+          [ngModel]="draft().avisoEnPeticiones"
+          (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+          name="avisoEnPeticiones"
+        />
+        Aviso en peticiones
+      </label>
+      <label class="checkbox-field">
+        <input type="checkbox" [ngModel]="draft().noActivo" (ngModelChange)="updateDraft('noActivo', $event)" name="noActivo" />
+        No activo
+      </label>
+    </div>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>

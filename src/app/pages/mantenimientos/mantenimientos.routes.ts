@@ -33,11 +33,6 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     loadComponent: () => import('./destino-informes/destino-informes-page').then((m) => m.DestinoInformesPage),
   },
   {
-    path: 'secciones',
-    title: 'Secciones',
-    loadComponent: () => import('./secciones/secciones-page').then((m) => m.SeccionesPage),
-  },
-  {
     path: 'soportes',
     title: 'Soportes',
     loadComponent: () => import('./soportes/soportes-page').then((m) => m.SoportesPage),
@@ -51,11 +46,6 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     path: 'tipos-muestra',
     title: 'Tipos de muestra',
     loadComponent: () => import('./tipos-muestra/tipos-muestra-page').then((m) => m.TiposMuestraPage),
-  },
-  {
-    path: 'sistematicos',
-    title: 'Sistemáticos',
-    loadComponent: () => import('./sistematicos/sistematicos-page').then((m) => m.SistematicosPage),
   },
   {
     path: 'hojas-trabajo',
@@ -81,6 +71,11 @@ export const MANTENIMIENTOS_ROUTES: Routes = [
     path: 'grupos-tecnicas',
     title: 'Grupos de técnicas',
     loadComponent: () => import('./grupos-tecnicas/grupos-tecnicas-page').then((m) => m.GruposTecnicasPage),
+  },
+  {
+    path: 'subgrupos',
+    title: 'Subgrupos',
+    loadComponent: () => import('./subgrupos/subgrupos-page').then((m) => m.SubgruposPage),
   },
   {
     path: 'base-pacientes',

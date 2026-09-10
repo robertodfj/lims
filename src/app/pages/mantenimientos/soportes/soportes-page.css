@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.drawer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawer-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+.orientation-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.orientation-toggle .btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+}
+
+@media (max-width: 640px) {
+  .drawer-form__row {
+    grid-template-columns: 1fr;
+  }
+}

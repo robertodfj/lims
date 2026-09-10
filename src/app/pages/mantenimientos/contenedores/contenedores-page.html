@@ -1,0 +1,163 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Contenedores</h1>
+      <p class="page-header__meta">Tipos de recipiente necesarios para la recogida y conservación de cada muestra.</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo contenedor
+      </button>
+    </div>
+  </div>
+
+  @if (contenedores() === null) {
+    <p class="page-header__meta">Cargando contenedores…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input class="input" type="text" placeholder="Buscar por contenedor…" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </label>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Contenedor</th>
+            <th scope="col">Tipo de muestra</th>
+            <th scope="col">Volumen</th>
+            <th scope="col">Color</th>
+            <th scope="col" class="is-num">Permanencia seroteca</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filtered(); track row.contenedor.id) {
+            <tr>
+              <td class="cell-primary">{{ row.contenedor.nombre }}</td>
+              <td class="cell-muted">{{ row.tipoMuestraNombre }}</td>
+              <td class="cell-muted">{{ row.contenedor.volumen || '—' }}</td>
+              <td>
+                <span class="color-dot" [style.background-color]="row.contenedor.color" [title]="row.contenedor.color"></span>
+              </td>
+              <td class="is-num cell-muted">
+                {{ row.contenedor.permanenciaSerotecaDias != null ? row.contenedor.permanenciaSerotecaDias + ' días' : '—' }}
+              </td>
+              <td class="is-num">
+                @if (confirmDeleteId() === row.contenedor.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(row.contenedor.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(row.contenedor)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(row.contenedor.id)" aria-label="Eliminar">
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ningún contenedor coincide con la búsqueda.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar contenedor' : 'Nuevo contenedor'" (closed)="closeDrawer()">
+  <form class="drawer-form" (ngSubmit)="save()">
+    <div class="field">
+      <label class="field__label" for="f-nombre">Contenedor <span class="field__required">*</span></label>
+      <input
+        id="f-nombre"
+        class="input"
+        type="text"
+        required
+        maxlength="30"
+        [ngModel]="draft().nombre"
+        (ngModelChange)="updateDraft('nombre', $event)"
+        name="nombre"
+      />
+      <span class="field__hint">{{ draft().nombre.length }} / 30</span>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Tipo de muestra</label>
+      <app-searchable-select
+        [items]="tiposMuestra()"
+        [value]="draft().tipoMuestraId"
+        (valueChange)="updateDraft('tipoMuestraId', $event)"
+      />
+    </div>
+
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label" for="f-volumen">Volumen</label>
+        <input
+          id="f-volumen"
+          class="input"
+          type="text"
+          placeholder="p. ej. 5 mL"
+          [ngModel]="draft().volumen"
+          (ngModelChange)="updateDraft('volumen', $event)"
+          name="volumen"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-permanencia">Permanencia seroteca (días)</label>
+        <input
+          id="f-permanencia"
+          class="input"
+          type="number"
+          min="0"
+          [ngModel]="draft().permanenciaSerotecaDias"
+          (ngModelChange)="updateDraft('permanenciaSerotecaDias', $event)"
+          name="permanencia"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-color">Color asociado</label>
+      <div class="color-picker">
+        <input
+          id="f-color"
+          class="color-picker__input"
+          type="color"
+          [ngModel]="draft().color"
+          (ngModelChange)="updateDraft('color', $event)"
+          name="color"
+        />
+        <span class="color-dot color-dot--lg" [style.background-color]="draft().color"></span>
+        <span class="color-picker__value">{{ draft().color }}</span>
+      </div>
+    </div>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>

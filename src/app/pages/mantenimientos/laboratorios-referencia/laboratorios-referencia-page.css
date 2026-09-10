@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.lab-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lab-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+}
+
+.lab-form__section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.lab-form__hint {
+  margin: -6px 0 0;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+
+.drawer-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+.lab-tecnicas {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lab-tecnicas__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.lab-tecnicas__empty {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  padding: 6px 2px;
+}
+
+@media (max-width: 640px) {
+  .drawer-form__row {
+    grid-template-columns: 1fr;
+  }
+}

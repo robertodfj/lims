@@ -4,6 +4,7 @@ import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { DESTINO_REPOSITORY } from '../destino-informes/destinos.tokens';
 import { createEmptyProcedencia, Procedencia } from './procedencia.model';
 import { PROCEDENCIA_REPOSITORY } from './procedencias.tokens';
 
@@ -23,6 +24,7 @@ type EstadoFilter = 'todos' | 'activa' | 'no-activa';
 export class ProcedenciasPage {
   private readonly repository = inject(PROCEDENCIA_REPOSITORY);
   private readonly catalogService = inject(CatalogService);
+  private readonly destinoRepository = inject(DESTINO_REPOSITORY);
 
   protected readonly procedencias = signal<Procedencia[] | null>(null);
 
@@ -141,12 +143,12 @@ export class ProcedenciasPage {
       this.catalogService.load('provincias') as Promise<Provincia[]>,
       this.catalogService.load('cabeceras'),
       this.catalogService.load('formas-pago'),
-      this.catalogService.load('destinos'),
+      this.destinoRepository.list(),
     ]);
     this.paises.set(paises);
     this.provincias.set(provincias);
     this.cabeceras.set(cabeceras);
     this.formasPago.set(formasPago);
-    this.destinos.set(destinos);
+    this.destinos.set(destinos.map((destino) => ({ id: destino.id, nombre: `${destino.codigo} — ${destino.descripcion}` })));
   }
 }

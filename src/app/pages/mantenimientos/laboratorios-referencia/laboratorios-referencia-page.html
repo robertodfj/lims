@@ -1,0 +1,300 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Laboratorios de referencia</h1>
+      <p class="page-header__meta">
+        Laboratorios externos a los que se derivan las pruebas que el laboratorio no realiza, para su procesamiento
+        y recepción del resultado.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo laboratorio
+      </button>
+    </div>
+  </div>
+
+  @if (laboratorios() === null) {
+    <p class="page-header__meta">Cargando laboratorios de referencia…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por nombre o código…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Población</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col" class="is-num">Técnicas</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (laboratorio of filtered(); track laboratorio.id) {
+            <tr>
+              <td class="cell-muted">{{ laboratorio.codigo }}</td>
+              <td class="cell-primary">{{ laboratorio.nombre }}</td>
+              <td class="cell-muted">{{ laboratorio.poblacion || '—' }}</td>
+              <td class="cell-muted">{{ laboratorio.telefono || '—' }}</td>
+              <td class="is-num cell-muted">{{ laboratorio.tecnicasAsociadasIds.length }}</td>
+              <td class="is-num">
+                @if (confirmDeleteId() === laboratorio.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(laboratorio.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(laboratorio)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn--danger-ghost btn--icon btn--sm"
+                      (click)="requestDelete(laboratorio.id)"
+                      aria-label="Eliminar"
+                    >
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ningún laboratorio de referencia coincide con la búsqueda.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer
+  [open]="drawerOpen()"
+  size="lg"
+  [title]="draft().id ? 'Editar laboratorio de referencia' : 'Nuevo laboratorio de referencia'"
+  (closed)="closeDrawer()"
+>
+  <form class="lab-form" (ngSubmit)="save()">
+    <section class="lab-form__section">
+      <div class="field">
+        <label class="field__label" for="f-codigo">Código</label>
+        <div class="field-with-action">
+          <input
+            id="f-codigo"
+            class="input"
+            type="text"
+            [ngModel]="draft().codigo"
+            (ngModelChange)="updateDraft('codigo', $event)"
+            name="codigo"
+          />
+          <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nombre">Nombre <span class="field__required">*</span></label>
+        <input
+          id="f-nombre"
+          class="input"
+          type="text"
+          required
+          maxlength="255"
+          [ngModel]="draft().nombre"
+          (ngModelChange)="updateDraft('nombre', $event)"
+          name="nombre"
+        />
+        <span class="field__hint">{{ draft().nombre.length }} / 255</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-domicilio">Domicilio</label>
+        <input
+          id="f-domicilio"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().domicilio"
+          (ngModelChange)="updateDraft('domicilio', $event)"
+          name="domicilio"
+        />
+        <span class="field__hint">{{ draft().domicilio.length }} / 255</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-poblacion">Población</label>
+          <input
+            id="f-poblacion"
+            class="input"
+            type="text"
+            maxlength="100"
+            [ngModel]="draft().poblacion"
+            (ngModelChange)="updateDraft('poblacion', $event)"
+            name="poblacion"
+          />
+          <span class="field__hint">{{ draft().poblacion.length }} / 100</span>
+        </div>
+        <div class="field">
+          <label class="field__label">Provincia</label>
+          <app-searchable-select
+            [items]="provincias()"
+            [value]="draft().provinciaId"
+            (valueChange)="updateDraft('provinciaId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-cp">Cp</label>
+        <input
+          id="f-cp"
+          class="input"
+          type="text"
+          maxlength="7"
+          [ngModel]="draft().cp"
+          (ngModelChange)="updateDraft('cp', $event)"
+          name="cp"
+        />
+        <span class="field__hint">{{ draft().cp.length }} / 7</span>
+      </div>
+    </section>
+
+    <section class="lab-form__section">
+      <h3 class="section-title">Contacto</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-numCliente">Nº Cliente</label>
+        <input
+          id="f-numCliente"
+          class="input"
+          type="text"
+          maxlength="25"
+          [ngModel]="draft().numCliente"
+          (ngModelChange)="updateDraft('numCliente', $event)"
+          name="numCliente"
+        />
+        <span class="field__hint">{{ draft().numCliente.length }} / 25</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-personaContacto">Persona Contacto</label>
+        <input
+          id="f-personaContacto"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().personaContacto"
+          (ngModelChange)="updateDraft('personaContacto', $event)"
+          name="personaContacto"
+        />
+        <span class="field__hint">{{ draft().personaContacto.length }} / 255</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-telefono">Teléfono</label>
+          <input
+            id="f-telefono"
+            class="input"
+            type="text"
+            maxlength="25"
+            [ngModel]="draft().telefono"
+            (ngModelChange)="updateDraft('telefono', $event)"
+            name="telefono"
+          />
+          <span class="field__hint">{{ draft().telefono.length }} / 25</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-fax">Fax</label>
+          <input
+            id="f-fax"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().fax"
+            (ngModelChange)="updateDraft('fax', $event)"
+            name="fax"
+          />
+          <span class="field__hint">{{ draft().fax.length }} / 50</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-observaciones">Observaciones</label>
+        <textarea
+          id="f-observaciones"
+          class="textarea"
+          [ngModel]="draft().observaciones"
+          (ngModelChange)="updateDraft('observaciones', $event)"
+          name="observaciones"
+        ></textarea>
+      </div>
+    </section>
+
+    <section class="lab-form__section">
+      <h3 class="section-title">Configuración avanzada</h3>
+      <p class="lab-form__hint">
+        Técnicas que este laboratorio de referencia realiza, para poder derivarlas desde el sistema.
+      </p>
+
+      <div class="field">
+        <label class="field__label">Añadir técnica</label>
+        <app-searchable-select
+          [items]="tecnicasDisponibles()"
+          [value]="null"
+          placeholder="Busque una técnica para asociarla"
+          emptyMessage="No hay más técnicas disponibles para asociar."
+          (valueChange)="addTecnica($event)"
+        />
+      </div>
+
+      <ul class="lab-tecnicas">
+        @for (tecnica of tecnicasAsociadas(); track tecnica.id) {
+          <li class="lab-tecnicas__item">
+            <span>{{ tecnica.nombre }}</span>
+            <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="removeTecnica(tecnica.id)" aria-label="Quitar técnica">
+              <app-icon name="x" [size]="13" />
+            </button>
+          </li>
+        } @empty {
+          <li class="lab-tecnicas__empty">Ninguna técnica asociada todavía.</li>
+        }
+      </ul>
+    </section>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>

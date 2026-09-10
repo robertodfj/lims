@@ -1,0 +1,100 @@
+<div class="rte">
+  <div class="rte__toolbar">
+    <button type="button" class="rte__btn" (mousedown)="$event.preventDefault()" (click)="exec('bold')" title="Negrita" aria-label="Negrita">
+      <strong>B</strong>
+    </button>
+    <button
+      type="button"
+      class="rte__btn rte__btn--italic"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('italic')"
+      title="Cursiva"
+      aria-label="Cursiva"
+    >
+      <em>I</em>
+    </button>
+    <button
+      type="button"
+      class="rte__btn rte__btn--underline"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('underline')"
+      title="Subrayado"
+      aria-label="Subrayado"
+    >
+      U
+    </button>
+
+    <span class="rte__divider"></span>
+
+    <button
+      type="button"
+      class="rte__btn"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('justifyLeft')"
+      title="Alinear a la izquierda"
+      aria-label="Alinear a la izquierda"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+        <rect y="1.5" width="14" height="1.6" rx="0.8" />
+        <rect y="6.2" width="9" height="1.6" rx="0.8" />
+        <rect y="10.9" width="12" height="1.6" rx="0.8" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="rte__btn"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('justifyCenter')"
+      title="Centrar"
+      aria-label="Centrar"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+        <rect y="1.5" width="14" height="1.6" rx="0.8" />
+        <rect x="2.5" y="6.2" width="9" height="1.6" rx="0.8" />
+        <rect x="1" y="10.9" width="12" height="1.6" rx="0.8" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="rte__btn"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('justifyRight')"
+      title="Alinear a la derecha"
+      aria-label="Alinear a la derecha"
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+        <rect y="1.5" width="14" height="1.6" rx="0.8" />
+        <rect x="5" y="6.2" width="9" height="1.6" rx="0.8" />
+        <rect x="2" y="10.9" width="12" height="1.6" rx="0.8" />
+      </svg>
+    </button>
+
+    <span class="rte__divider"></span>
+
+    <label class="rte__color" title="Color de texto">
+      <span class="rte__color-swatch"></span>
+      <input type="color" value="#1f2937" (input)="onColor($event)" aria-label="Color de texto" />
+    </label>
+
+    <button
+      type="button"
+      class="rte__btn"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec('removeFormat')"
+      title="Quitar formato"
+      aria-label="Quitar formato"
+    >
+      <app-icon name="x" [size]="13" />
+    </button>
+  </div>
+
+  <div
+    #editor
+    class="rte__editor"
+    contenteditable="true"
+    role="textbox"
+    aria-multiline="true"
+    [attr.data-placeholder]="placeholder()"
+    (input)="emitChange()"
+  ></div>
+</div>

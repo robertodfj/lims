@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.drawer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field__required {
+  color: var(--danger);
+}

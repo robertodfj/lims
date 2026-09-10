@@ -1,5 +1,32 @@
 [
-  { "id": "correo", "nombre": "Correo postal" },
-  { "id": "email", "nombre": "Email" },
-  { "id": "recogida", "nombre": "Recogida en mano" }
+  {
+    "id": "correo",
+    "codigo": "1",
+    "descripcion": "Correo postal",
+    "orden": 1,
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": false,
+    "noActivo": false
+  },
+  {
+    "id": "email",
+    "codigo": "2",
+    "descripcion": "Email",
+    "orden": 2,
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": false,
+    "noActivo": false
+  },
+  {
+    "id": "recogida",
+    "codigo": "3",
+    "descripcion": "Recogida en mano",
+    "orden": 3,
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": false,
+    "noActivo": false
+  }
 ]

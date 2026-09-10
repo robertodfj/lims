@@ -1,6 +1,34 @@
 [
-  { "id": "tubo-edta", "nombre": "Tubo EDTA" },
-  { "id": "tubo-seco", "nombre": "Tubo seco" },
-  { "id": "tubo-citrato", "nombre": "Tubo citrato" },
-  { "id": "frasco-orina", "nombre": "Frasco de orina" }
+  {
+    "id": "tubo-edta",
+    "nombre": "Tubo EDTA",
+    "tipoMuestraId": "sangre",
+    "volumen": "4 mL",
+    "color": "#7c3aed",
+    "permanenciaSerotecaDias": null
+  },
+  {
+    "id": "tubo-seco",
+    "nombre": "Tubo seco",
+    "tipoMuestraId": "sangre",
+    "volumen": "5 mL",
+    "color": "#dc2626",
+    "permanenciaSerotecaDias": 90
+  },
+  {
+    "id": "tubo-citrato",
+    "nombre": "Tubo citrato",
+    "tipoMuestraId": "sangre",
+    "volumen": "3.6 mL",
+    "color": "#2563eb",
+    "permanenciaSerotecaDias": null
+  },
+  {
+    "id": "frasco-orina",
+    "nombre": "Frasco de orina",
+    "tipoMuestraId": "orina",
+    "volumen": "60 mL",
+    "color": "#ca8a04",
+    "permanenciaSerotecaDias": null
+  }
 ]
