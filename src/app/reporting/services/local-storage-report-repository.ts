@@ -9,7 +9,7 @@ export class LocalStorageReportRepository implements ReportRepository {
 
   async list(): Promise<ReportSummary[]> {
     return this.readAll()
-      .map(({ id, name, pages, updatedAt }) => ({ id, name, pageCount: pages.length, updatedAt }))
+      .map(({ id, name, updatedAt }) => ({ id, name, updatedAt }))
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 

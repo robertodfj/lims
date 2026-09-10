@@ -1,14 +1,28 @@
-import { createId } from '../../core/utils/create-id';
-import { ReportDocument, ReportPage } from './report.model';
+import { ReportDocument } from './report.model';
 
-export function createReportPage(): ReportPage {
-  return { id: createId('pg') };
+/** Contenido inicial de todo informe nuevo: un componente Vue de un único archivo. */
+export const STARTER_REPORT_CODE = `<script setup lang="ts">
+//
+</script>
+
+<template>
+  <div class="report">
+    <h1>Informe nuevo</h1>
+  </div>
+</template>
+
+<style scoped>
+.report {
+  font-family: sans-serif;
+  padding: 24px;
 }
+</style>
+`;
 
-export function createNewReport(): ReportDocument {
+export function createNewReport(name: string): ReportDocument {
   return {
     id: null,
-    name: 'Informe sin título',
-    pages: [createReportPage()],
+    name,
+    code: STARTER_REPORT_CODE,
   };
 }

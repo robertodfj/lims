@@ -10,7 +10,7 @@ describe('LocalStorageReportRepository', () => {
   });
 
   it('asigna id y fechas al guardar un informe nuevo y lo recupera', async () => {
-    const saved = await repository.save(createNewReport());
+    const saved = await repository.save(createNewReport('Informe sin título'));
 
     expect(saved.id).toMatch(/^rpt-/);
     expect(saved.createdAt).toBe(saved.updatedAt);
@@ -19,7 +19,7 @@ describe('LocalStorageReportRepository', () => {
   });
 
   it('actualiza un informe existente sin duplicarlo', async () => {
-    const saved = await repository.save(createNewReport());
+    const saved = await repository.save(createNewReport('Informe sin título'));
     await repository.save({ ...saved, name: 'Hemograma' });
 
     const summaries = await repository.list();
@@ -28,7 +28,7 @@ describe('LocalStorageReportRepository', () => {
   });
 
   it('elimina un informe', async () => {
-    const saved = await repository.save(createNewReport());
+    const saved = await repository.save(createNewReport('Informe sin título'));
     await repository.delete(saved.id);
 
     expect(await repository.get(saved.id)).toBeNull();
