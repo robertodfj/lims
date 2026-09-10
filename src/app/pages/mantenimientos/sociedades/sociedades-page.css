@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+.sociedad-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sociedad-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+}
+
+.sociedad-form__section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.drawer-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+.field-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-with-suffix .input {
+  flex: 1;
+}
+
+.field-with-suffix__unit {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+@media (max-width: 640px) {
+  .drawer-form__row,
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}

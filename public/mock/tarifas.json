@@ -1,0 +1,5 @@
+[
+  { "id": "tarifa-general", "nombre": "Tarifa general" },
+  { "id": "tarifa-convenio", "nombre": "Tarifa convenio" },
+  { "id": "tarifa-privada", "nombre": "Tarifa privada" }
+]

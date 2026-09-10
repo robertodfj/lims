@@ -1,0 +1,5 @@
+[
+  { "id": "pendiente", "nombre": "Pendiente" },
+  { "id": "facturado", "nombre": "Facturado" },
+  { "id": "no-facturable", "nombre": "No facturable" }
+]
