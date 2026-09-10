@@ -8,7 +8,6 @@ export interface Tecnica {
   tipoResultadoId: string | null;
   numDecimales: number | null;
   acreditado: boolean;
-  codigoTec: string;
   ordenImpresion: number | null;
   laboratorioExternoId: string | null;
   nombreInforme: string;
@@ -52,7 +51,6 @@ export function createEmptyTecnica(): Tecnica {
     tipoResultadoId: null,
     numDecimales: null,
     acreditado: false,
-    codigoTec: '',
     ordenImpresion: null,
     laboratorioExternoId: null,
     nombreInforme: '',

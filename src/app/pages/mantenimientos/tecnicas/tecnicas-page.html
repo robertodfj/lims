@@ -98,35 +98,20 @@
   <form class="tecnica-form" (ngSubmit)="save()">
     <section class="tecnica-form__section">
       <h3 class="section-title">Identificación</h3>
-      <div class="drawer-form__row">
-        <div class="field">
-          <label class="field__label" for="f-codigo">ID / Código</label>
-          <div class="field-with-action">
-            <input
-              id="f-codigo"
-              class="input"
-              type="text"
-              [ngModel]="draft().codigo"
-              (ngModelChange)="updateDraft('codigo', $event)"
-              name="codigo"
-            />
-            <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
-              Auto
-            </button>
-          </div>
-        </div>
-        <div class="field">
-          <label class="field__label" for="f-codigoTec">Código Tec</label>
+      <div class="field">
+        <label class="field__label" for="f-codigo">ID / Código</label>
+        <div class="field-with-action">
           <input
-            id="f-codigoTec"
+            id="f-codigo"
             class="input"
             type="text"
-            maxlength="50"
-            [ngModel]="draft().codigoTec"
-            (ngModelChange)="updateDraft('codigoTec', $event)"
-            name="codigoTec"
+            [ngModel]="draft().codigo"
+            (ngModelChange)="updateDraft('codigo', $event)"
+            name="codigo"
           />
-          <span class="field__hint">{{ draft().codigoTec.length }} / 50</span>
+          <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+            Auto
+          </button>
         </div>
       </div>
 
