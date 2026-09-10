@@ -1,0 +1,79 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Dashboard</h1>
+      <p class="page-header__meta">Hoy es {{ today }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--secondary">
+        <app-icon name="filter" [size]="14" />
+        Filtrar
+      </button>
+      <button type="button" class="btn btn--primary">
+        <app-icon name="plus" [size]="14" />
+        Nueva petición
+      </button>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    @for (kpi of kpis; track kpi.label) {
+      <div class="kpi">
+        <span class="kpi__label">{{ kpi.label }}</span>
+        <div class="kpi__row">
+          <span class="kpi__value">{{ kpi.value }}</span>
+          <span class="kpi__delta" [class.kpi__delta--up]="kpi.sentiment === 'good'" [class.kpi__delta--down]="kpi.sentiment === 'bad'">
+            {{ kpi.delta }}
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-title">Peticiones recientes</div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Petición</th>
+              <th scope="col">Paciente</th>
+              <th scope="col">Procedencia</th>
+              <th scope="col">Técnica</th>
+              <th scope="col">Estado</th>
+              <th scope="col" class="is-num">Hora</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of recentRequests; track row.id) {
+              <tr>
+                <td class="cell-primary">{{ row.id }}</td>
+                <td>{{ row.paciente }}</td>
+                <td class="cell-muted">{{ row.procedencia }}</td>
+                <td class="cell-muted">{{ row.tecnica }}</td>
+                <td><span class="badge" [class]="estadoBadge(row.estado)">{{ estadoLabel(row.estado) }}</span></td>
+                <td class="is-num cell-muted">{{ row.hora }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__header">
+        <span class="panel__title">Actividad reciente</span>
+      </div>
+      @for (item of activity; track item.texto) {
+        <div class="list-item">
+          <span class="list-item__dot"></span>
+          <div class="list-item__body">
+            <p class="list-item__title">{{ item.texto }}</p>
+            <p class="list-item__meta">{{ item.hora }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
