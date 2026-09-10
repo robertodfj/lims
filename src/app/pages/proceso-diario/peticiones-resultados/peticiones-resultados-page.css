@@ -1,0 +1,135 @@
+:host {
+  display: block;
+}
+
+.field__required {
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   Pestañas del formulario de petición
+   ========================================================================== */
+
+.peticion-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.peticion-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.peticion-tabs__tab {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.peticion-tabs__tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.peticion-tabs__tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ==========================================================================
+   Layout de dos paneles
+   ========================================================================== */
+
+.peticion-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.peticion-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  min-height: 0;
+}
+
+.peticion-panel__header {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.peticion-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .peticion-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Tabla de técnicas de la solicitud
+   ========================================================================== */
+
+.peticion-tecnicas {
+  margin-top: 4px;
+}
+
+.peticion-tecnicas__precio {
+  width: 96px;
+  text-align: right;
+}
+
+.peticion-tecnicas__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+  padding: 10px 4px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Pie de acciones
+   ========================================================================== */
+
+.peticion-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}

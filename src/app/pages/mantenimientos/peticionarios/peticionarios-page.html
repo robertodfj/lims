@@ -14,6 +14,9 @@
     </div>
   </div>
 
+  @if (peticionarios() === null) {
+    <p class="page-header__meta">Cargando peticionarios…</p>
+  } @else {
   <div class="toolbar">
     <label class="search-input toolbar__search">
       <app-icon name="search" [size]="15" />
@@ -126,9 +129,10 @@
       </div>
     </div>
   </div>
+  }
 </div>
 
-<app-drawer [open]="drawerOpen()" [title]="editingId() ? 'Editar peticionario' : 'Nuevo peticionario'" (closed)="closeDrawer()">
+<app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar peticionario' : 'Nuevo peticionario'" (closed)="closeDrawer()">
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>
@@ -141,7 +145,7 @@
           (ngModelChange)="updateDraft('codigo', $event)"
           name="codigo"
         />
-        <button type="button" class="btn btn--secondary btn--sm" (click)="generateCodigo()">Auto</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">Auto</button>
       </div>
     </div>
 
@@ -233,6 +237,8 @@
 
   <div drawerFooter>
     <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
-    <button type="button" class="btn btn--primary" (click)="save()">Guardar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
   </div>
 </app-drawer>

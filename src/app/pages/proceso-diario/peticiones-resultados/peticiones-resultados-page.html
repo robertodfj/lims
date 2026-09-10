@@ -1,0 +1,310 @@
+@if (mode() === 'list') {
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Peticiones y resultados</h1>
+        <p class="page-header__meta">Peticiones de pruebas registradas: alta, seguimiento y resultados de cada una.</p>
+      </div>
+      <div class="page-header__actions">
+        <button type="button" class="btn btn--primary" (click)="openNueva()">
+          <app-icon name="plus" [size]="14" />
+          Nueva petición
+        </button>
+      </div>
+    </div>
+
+    @if (peticiones() === null) {
+      <p class="page-header__meta">Cargando peticiones…</p>
+    } @else {
+      <div class="toolbar">
+        <label class="search-input toolbar__search">
+          <app-icon name="search" [size]="15" />
+          <input
+            class="input"
+            type="text"
+            placeholder="Buscar por nº de registro, sociedad, procedencia o peticionario…"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event)"
+          />
+        </label>
+
+        <select class="select toolbar__filter" [ngModel]="rangeFilter()" (ngModelChange)="rangeFilter.set($event)">
+          <option value="todas">Todas las fechas</option>
+          <option value="hoy">Hoy</option>
+          <option value="mes">Este mes</option>
+          <option value="anio">Este año</option>
+          <option value="rango">Rango de fechas…</option>
+        </select>
+
+        @if (rangeFilter() === 'rango') {
+          <input
+            class="input toolbar__filter"
+            type="date"
+            [ngModel]="rangoDesde()"
+            (ngModelChange)="rangoDesde.set($event)"
+            aria-label="Desde"
+          />
+          <input
+            class="input toolbar__filter"
+            type="date"
+            [ngModel]="rangoHasta()"
+            (ngModelChange)="rangoHasta.set($event)"
+            aria-label="Hasta"
+          />
+        }
+
+        <span class="toolbar__spacer"></span>
+        <span class="toolbar__count">{{ filtered().length }} resultados</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Nº Registro</th>
+              <th scope="col">Fecha visita</th>
+              <th scope="col">Sociedad</th>
+              <th scope="col">Procedencia</th>
+              <th scope="col">Peticionario</th>
+              <th scope="col" class="is-num">Nº pruebas</th>
+              <th scope="col" class="is-num">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filtered(); track row.peticion.id) {
+              <tr>
+                <td class="cell-primary">{{ row.peticion.numRegistro }}</td>
+                <td class="cell-muted">{{ row.peticion.fechaVisita || '—' }}</td>
+                <td class="cell-muted">{{ row.sociedadNombre }}</td>
+                <td class="cell-muted">{{ row.procedenciaNombre }}</td>
+                <td class="cell-muted">{{ row.peticionarioNombre }}</td>
+                <td class="is-num cell-muted">{{ row.peticion.tecnicas.length }}</td>
+                <td class="is-num">
+                  @if (confirmDeleteId() === row.peticion.id) {
+                    <div class="row-confirm">
+                      <span>¿Eliminar?</span>
+                      <button type="button" class="confirm-danger" (click)="confirmDelete(row.peticion.id)">Sí</button>
+                      <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                    </div>
+                  } @else {
+                    <div class="row-actions">
+                      <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(row.peticion)" aria-label="Editar">
+                        <app-icon name="pencil" [size]="14" />
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn--danger-ghost btn--icon btn--sm"
+                        (click)="requestDelete(row.peticion.id)"
+                        aria-label="Eliminar"
+                      >
+                        <app-icon name="trash" [size]="14" />
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state empty-state--inline">
+                    <p class="empty-state__title">Sin resultados</p>
+                    <p class="empty-state__desc">Ninguna petición coincide con los filtros aplicados.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="peticion-form">
+    <div class="peticion-tabs">
+      <button type="button" class="peticion-tabs__tab is-active">Petición de pruebas</button>
+      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Datos demográficos</button>
+      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Resultados</button>
+      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Seroteca</button>
+      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Distribución de muestras</button>
+      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Auditor</button>
+    </div>
+
+    <div class="peticion-layout">
+      <div class="peticion-panel">
+        <div class="peticion-panel__header">
+          <span>Último Nº de Registro ({{ mesAnioActual() }}): {{ ultimoNumRegistro() }}</span>
+        </div>
+        <div class="peticion-panel__body">
+          <div class="field">
+            <label class="field__label" for="f-numRegistro">Nº Registro</label>
+            <input
+              id="f-numRegistro"
+              class="input"
+              type="number"
+              [ngModel]="draft().numRegistro"
+              (ngModelChange)="updateDraft('numRegistro', $event)"
+              name="numRegistro"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="f-fechaVisita">Fecha Visita</label>
+            <input
+              id="f-fechaVisita"
+              class="input"
+              type="datetime-local"
+              [ngModel]="draft().fechaVisita"
+              (ngModelChange)="updateDraft('fechaVisita', $event)"
+              name="fechaVisita"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Sociedad <span class="field__required">*</span></label>
+            <app-searchable-select
+              [items]="sociedades()"
+              [value]="draft().sociedadId"
+              (valueChange)="updateDraft('sociedadId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Procedencia <span class="field__required">*</span></label>
+            <app-searchable-select
+              [items]="procedencias()"
+              [value]="draft().procedenciaId"
+              (valueChange)="updateDraft('procedenciaId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Peticionario <span class="field__required">*</span></label>
+            <app-searchable-select
+              [items]="peticionarios()"
+              [value]="draft().peticionarioId"
+              (valueChange)="updateDraft('peticionarioId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Tipo</label>
+            <app-searchable-select
+              [items]="tiposPeticion()"
+              [value]="draft().tipoPeticionId"
+              (valueChange)="updateDraft('tipoPeticionId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Facturación</label>
+            <app-searchable-select
+              [items]="estadosFacturacion()"
+              [value]="draft().estadoFacturacionId"
+              (valueChange)="updateDraft('estadoFacturacionId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Destino</label>
+            <app-searchable-select
+              [items]="destinos()"
+              [value]="draft().destinoId"
+              (valueChange)="updateDraft('destinoId', $event)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="f-comentario">Comentario Petición</label>
+            <textarea
+              id="f-comentario"
+              class="textarea"
+              [ngModel]="draft().comentario"
+              (ngModelChange)="updateDraft('comentario', $event)"
+              name="comentario"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="peticion-panel">
+        <div class="peticion-panel__header">Solicitud de Pruebas</div>
+        <div class="peticion-panel__body">
+          <app-searchable-select
+            [items]="tecnicasDisponibles()"
+            [value]="null"
+            placeholder="Seleccione un elemento de la lista"
+            emptyMessage="No hay más técnicas disponibles para añadir."
+            (valueChange)="addTecnica($event)"
+          />
+
+          <div class="peticion-tecnicas table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Técnica</th>
+                  <th scope="col" class="is-num">Precio</th>
+                  <th scope="col" class="is-num">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of lineasSolicitud(); track item.linea.tecnicaId) {
+                  <tr>
+                    <td class="cell-primary">{{ item.nombre }}</td>
+                    <td class="is-num">
+                      <input
+                        class="input peticion-tecnicas__precio"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        [ngModel]="item.linea.precio"
+                        (ngModelChange)="updateTecnicaPrecio(item.linea.tecnicaId, $event)"
+                        [name]="'precio-' + item.linea.tecnicaId"
+                      />
+                    </td>
+                    <td class="is-num">
+                      <button
+                        type="button"
+                        class="btn btn--ghost btn--icon btn--sm"
+                        (click)="removeTecnica(item.linea.tecnicaId)"
+                        aria-label="Quitar técnica"
+                      >
+                        <app-icon name="x" [size]="14" />
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3">
+                      <div class="empty-state empty-state--inline">
+                        <p class="empty-state__title">No hay datos que mostrar</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="peticion-tecnicas__footer">
+            <span>Nº Pruebas: {{ draft().tecnicas.length }}</span>
+            <span>Precio: {{ totalPrecio() | number: '1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="peticion-footer">
+      <button type="button" class="btn btn--secondary" (click)="cancelarForm()">Cancelar</button>
+      <button type="button" class="btn btn--secondary" disabled title="Pendiente: requiere la pestaña Datos demográficos">
+        Guardar Y Datos (F8)
+      </button>
+      <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYNuevo()">Guardar Y Nuevo (F9)</button>
+      <button type="button" class="btn btn--secondary" disabled title="Pendiente: requiere procesamiento por lotes">
+        Guardar Por Lotes (F7)
+      </button>
+      <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="guardar()">
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+}
