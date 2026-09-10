@@ -1,0 +1,219 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Peticionarios</h1>
+      <p class="page-header__meta">{{ filtered().length }} peticionarios registrados</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nuevo peticionario
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label class="search-input toolbar__search">
+      <app-icon name="search" [size]="15" />
+      <input
+        class="input"
+        type="text"
+        placeholder="Buscar por nombre, colegiado o email…"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </label>
+
+    <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
+      <option value="todos">Todos los estados</option>
+      <option value="activo">Activo</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+
+    <span class="toolbar__spacer"></span>
+    <span class="toolbar__count">{{ filtered().length }} resultados</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col" [class.is-sorted]="sortColumn() === 'nombre'">
+            <button type="button" class="th-sort" (click)="toggleSort('nombre')">
+              Nombre
+              <app-icon name="arrow-up-down" [size]="12" />
+            </button>
+          </th>
+          <th scope="col" [class.is-sorted]="sortColumn() === 'colegiado'">
+            <button type="button" class="th-sort" (click)="toggleSort('colegiado')">
+              Nº colegiado
+              <app-icon name="arrow-up-down" [size]="12" />
+            </button>
+          </th>
+          <th scope="col" [class.is-sorted]="sortColumn() === 'especialidad'">
+            <button type="button" class="th-sort" (click)="toggleSort('especialidad')">
+              Especialidad
+              <app-icon name="arrow-up-down" [size]="12" />
+            </button>
+          </th>
+          <th scope="col">Contacto</th>
+          <th scope="col" [class.is-sorted]="sortColumn() === 'estado'">
+            <button type="button" class="th-sort" (click)="toggleSort('estado')">
+              Estado
+              <app-icon name="arrow-up-down" [size]="12" />
+            </button>
+          </th>
+          <th scope="col" class="is-num">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of filtered(); track row.id) {
+          <tr>
+            <td class="cell-primary">{{ row.nombre }}</td>
+            <td class="cell-muted">{{ row.colegiado }}</td>
+            <td>{{ row.especialidad }}</td>
+            <td class="cell-muted">{{ row.telefono }}</td>
+            <td>
+              <span class="badge" [class.badge--success]="row.estado === 'activo'" [class.badge--neutral]="row.estado === 'inactivo'">
+                {{ row.estado === 'activo' ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="is-num">
+              @if (confirmDeleteId() === row.id) {
+                <div class="row-confirm">
+                  <span>¿Eliminar?</span>
+                  <button type="button" class="confirm-danger" (click)="confirmDelete(row.id)">Sí</button>
+                  <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                </div>
+              } @else {
+                <div class="row-actions">
+                  <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(row)" aria-label="Editar">
+                    <app-icon name="pencil" [size]="14" />
+                  </button>
+                  <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(row.id)" aria-label="Eliminar">
+                    <app-icon name="trash" [size]="14" />
+                  </button>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">
+              <div class="empty-state empty-state--inline">
+                <p class="empty-state__title">Sin resultados</p>
+                <p class="empty-state__desc">Ningún peticionario coincide con los filtros aplicados.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <span>1–{{ filtered().length }} de {{ filtered().length }}</span>
+      <div class="pagination__pages">
+        <button type="button" class="btn btn--ghost btn--icon btn--sm" disabled aria-label="Anterior">
+          <app-icon name="chevron-down" [size]="14" class="icon-point-left" />
+        </button>
+        <button type="button" class="btn btn--ghost btn--icon btn--sm" disabled aria-label="Siguiente">
+          <app-icon name="chevron-down" [size]="14" class="icon-point-right" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-drawer [open]="drawerOpen()" [title]="editingId() ? 'Editar peticionario' : 'Nuevo peticionario'" (closed)="closeDrawer()">
+  <form class="drawer-form" (ngSubmit)="save()">
+    <div class="field">
+      <label class="field__label" for="f-nombre">Nombre completo</label>
+      <input
+        id="f-nombre"
+        class="input"
+        type="text"
+        required
+        [ngModel]="draft().nombre"
+        (ngModelChange)="updateDraft('nombre', $event)"
+        name="nombre"
+      />
+    </div>
+
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label" for="f-colegiado">Nº colegiado</label>
+        <input
+          id="f-colegiado"
+          class="input"
+          type="text"
+          [ngModel]="draft().colegiado"
+          (ngModelChange)="updateDraft('colegiado', $event)"
+          name="colegiado"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-especialidad">Especialidad</label>
+        <select
+          id="f-especialidad"
+          class="select"
+          [ngModel]="draft().especialidad"
+          (ngModelChange)="updateDraft('especialidad', $event)"
+          name="especialidad"
+        >
+          @for (item of especialidades; track item) {
+            <option [value]="item">{{ item }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label" for="f-telefono">Teléfono</label>
+        <input
+          id="f-telefono"
+          class="input"
+          type="text"
+          [ngModel]="draft().telefono"
+          (ngModelChange)="updateDraft('telefono', $event)"
+          name="telefono"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-email">Email</label>
+        <input
+          id="f-email"
+          class="input"
+          type="email"
+          [ngModel]="draft().email"
+          (ngModelChange)="updateDraft('email', $event)"
+          name="email"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-estado">Estado</label>
+      <select
+        id="f-estado"
+        class="select"
+        [ngModel]="draft().estado"
+        (ngModelChange)="updateDraft('estado', $event)"
+        name="estado"
+      >
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-notas">Notas</label>
+      <textarea id="f-notas" class="textarea" name="notas" placeholder="Observaciones internas…"></textarea>
+    </div>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" (click)="save()">Guardar</button>
+  </div>
+</app-drawer>
