@@ -89,15 +89,24 @@
   </div>
 </app-modal>
 
-<app-modal [open]="advancedEditOpen()" size="xl" [title]="'Edición avanzada — ' + (advancedEditReport()?.name ?? '')" (closed)="closeAdvancedEdit()">
+<app-modal [open]="advancedEditOpen()" size="xl" [title]="'Edición avanzada — ' + (advancedEditReport()?.name ?? '')" (closed)="requestCloseAdvancedEdit()">
   @if (advancedEditReport()) {
     <div #codeEditorMount class="code-editor-mount"></div>
   }
 
   <div modalFooter>
-    <button type="button" class="btn btn--secondary" (click)="closeAdvancedEdit()">Cancelar</button>
+    <button type="button" class="btn btn--secondary" (click)="requestCloseAdvancedEdit()">Cancelar</button>
     <button type="button" class="btn btn--primary" [disabled]="savingAdvanced()" (click)="saveAdvancedEdit()">
       {{ savingAdvanced() ? 'Guardando…' : 'Guardar' }}
     </button>
+  </div>
+</app-modal>
+
+<app-modal [open]="confirmDiscardOpen()" size="sm" [elevated]="true" title="¿Salir sin guardar?" (closed)="cancelDiscard()">
+  <p class="discard-warning">Tienes cambios sin guardar en el informe. Si sales ahora, se perderán.</p>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="cancelDiscard()">Seguir editando</button>
+    <button type="button" class="btn btn--danger-ghost" (click)="confirmDiscard()">Salir sin guardar</button>
   </div>
 </app-modal>

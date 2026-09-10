@@ -30,6 +30,8 @@ export class ReportListPage {
   protected readonly advancedEditOpen = signal(false);
   protected readonly advancedEditReport = signal<SavedReportDocument | null>(null);
   protected readonly savingAdvanced = signal(false);
+  protected readonly confirmDiscardOpen = signal(false);
+  private originalCode: string | null = null;
 
   protected readonly confirmDeleteId = signal<string | null>(null);
 
@@ -102,13 +104,39 @@ export class ReportListPage {
     if (!full) {
       return;
     }
+    this.originalCode = full.code;
     this.advancedEditReport.set(full);
     this.advancedEditOpen.set(true);
+  }
+
+  /** Punto de cierre del modal (overlay, Escape, botón X o Cancelar): pide confirmación si hay cambios sin guardar. */
+  protected requestCloseAdvancedEdit(): void {
+    if (this.confirmDiscardOpen()) {
+      return;
+    }
+    const currentCode = this.codeEditor?.getCode();
+    const isDirty = currentCode != null && currentCode !== this.originalCode;
+    if (isDirty) {
+      this.confirmDiscardOpen.set(true);
+    } else {
+      this.closeAdvancedEdit();
+    }
+  }
+
+  protected confirmDiscard(): void {
+    this.confirmDiscardOpen.set(false);
+    this.closeAdvancedEdit();
+  }
+
+  protected cancelDiscard(): void {
+    this.confirmDiscardOpen.set(false);
   }
 
   protected closeAdvancedEdit(): void {
     this.advancedEditOpen.set(false);
     this.advancedEditReport.set(null);
+    this.confirmDiscardOpen.set(false);
+    this.originalCode = null;
   }
 
   protected async saveAdvancedEdit(): Promise<void> {
