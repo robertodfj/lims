@@ -32,6 +32,7 @@ export class ProcedenciasPage {
   protected readonly drawerOpen = signal(false);
   protected readonly draft = signal<Procedencia>(createEmptyProcedencia());
   protected readonly saving = signal(false);
+  protected readonly generatingCodigo = signal(false);
   protected readonly confirmDeleteId = signal<string | null>(null);
 
   protected readonly paises = signal<readonly CatalogItem[]>([]);
@@ -56,7 +57,9 @@ export class ProcedenciasPage {
         if (estado === 'no-activa') return procedencia.noActiva;
         return true;
       })
-      .filter((procedencia) => !term || procedencia.nombre.toLowerCase().includes(term));
+      .filter(
+        (procedencia) => !term || procedencia.nombre.toLowerCase().includes(term) || procedencia.codigo.toLowerCase().includes(term),
+      );
   });
 
   constructor() {
@@ -64,9 +67,20 @@ export class ProcedenciasPage {
     void this.loadCatalogs();
   }
 
-  protected openNew(): void {
+  protected async openNew(): Promise<void> {
     this.draft.set(createEmptyProcedencia());
     this.drawerOpen.set(true);
+    await this.generateCodigo();
+  }
+
+  protected async generateCodigo(): Promise<void> {
+    this.generatingCodigo.set(true);
+    try {
+      const codigo = await this.repository.nextCodigo();
+      this.updateDraft('codigo', codigo);
+    } finally {
+      this.generatingCodigo.set(false);
+    }
   }
 
   protected openEdit(procedencia: Procedencia): void {

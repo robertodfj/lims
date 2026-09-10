@@ -10,4 +10,6 @@ export interface ProcedenciaRepository {
   get(id: string): Promise<Procedencia | null>;
   save(procedencia: Procedencia): Promise<Procedencia>;
   delete(id: string): Promise<void>;
+  /** Siguiente código sugerido: el mayor código numérico entre las procedencias activas, +1. */
+  nextCodigo(): Promise<string>;
 }

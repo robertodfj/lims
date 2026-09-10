@@ -1,5 +1,6 @@
 export interface Procedencia {
   readonly id: string;
+  codigo: string;
   nombre: string;
   domicilio: string;
   poblacion: string;
@@ -26,6 +27,7 @@ export interface Procedencia {
 export function createEmptyProcedencia(): Procedencia {
   return {
     id: '',
+    codigo: '',
     nombre: '',
     domicilio: '',
     poblacion: '',

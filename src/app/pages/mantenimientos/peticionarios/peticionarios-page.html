@@ -38,6 +38,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th scope="col">Código</th>
           <th scope="col" [class.is-sorted]="sortColumn() === 'nombre'">
             <button type="button" class="th-sort" (click)="toggleSort('nombre')">
               Nombre
@@ -69,6 +70,7 @@
       <tbody>
         @for (row of filtered(); track row.id) {
           <tr>
+            <td class="cell-muted">{{ row.codigo }}</td>
             <td class="cell-primary">{{ row.nombre }}</td>
             <td class="cell-muted">{{ row.colegiado }}</td>
             <td>{{ row.especialidad }}</td>
@@ -99,7 +101,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">
+            <td colspan="7">
               <div class="empty-state empty-state--inline">
                 <p class="empty-state__title">Sin resultados</p>
                 <p class="empty-state__desc">Ningún peticionario coincide con los filtros aplicados.</p>
@@ -126,6 +128,21 @@
 
 <app-drawer [open]="drawerOpen()" [title]="editingId() ? 'Editar peticionario' : 'Nuevo peticionario'" (closed)="closeDrawer()">
   <form class="drawer-form" (ngSubmit)="save()">
+    <div class="field">
+      <label class="field__label" for="f-codigo">Código</label>
+      <div class="field-with-action">
+        <input
+          id="f-codigo"
+          class="input"
+          type="text"
+          [ngModel]="draft().codigo"
+          (ngModelChange)="updateDraft('codigo', $event)"
+          name="codigo"
+        />
+        <button type="button" class="btn btn--secondary btn--sm" (click)="generateCodigo()">Auto</button>
+      </div>
+    </div>
+
     <div class="field">
       <label class="field__label" for="f-nombre">Nombre completo</label>
       <input

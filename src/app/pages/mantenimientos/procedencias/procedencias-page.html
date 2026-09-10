@@ -41,6 +41,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th scope="col">Código</th>
             <th scope="col">Procedencia</th>
             <th scope="col">Población</th>
             <th scope="col">Teléfono</th>
@@ -51,6 +52,7 @@
         <tbody>
           @for (procedencia of filtered(); track procedencia.id) {
             <tr>
+              <td class="cell-muted">{{ procedencia.codigo }}</td>
               <td class="cell-primary">{{ procedencia.nombre }}</td>
               <td class="cell-muted">{{ procedencia.poblacion || '—' }}</td>
               <td class="cell-muted">{{ procedencia.telefono || '—' }}</td>
@@ -80,7 +82,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty-state empty-state--inline">
                   <p class="empty-state__title">Sin resultados</p>
                   <p class="empty-state__desc">Ninguna procedencia coincide con los filtros aplicados.</p>
@@ -98,6 +100,23 @@
   <form class="procedencia-form" (ngSubmit)="save()">
     <section class="procedencia-form__section">
       <h3 class="section-title">Datos generales</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-codigo">Código</label>
+        <div class="field-with-action">
+          <input
+            id="f-codigo"
+            class="input"
+            type="text"
+            [ngModel]="draft().codigo"
+            (ngModelChange)="updateDraft('codigo', $event)"
+            name="codigo"
+          />
+          <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+            Auto
+          </button>
+        </div>
+      </div>
 
       <div class="field">
         <label class="field__label" for="f-nombre">Procedencia <span class="field__required">*</span></label>
