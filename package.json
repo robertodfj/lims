@@ -1,0 +1,38 @@
+{
+  "name": "lims",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "typecheck:reporting": "vue-tsc -p tsconfig.vue.json",
+    "check": "npm run typecheck:reporting && ng build && ng test --watch=false"
+  },
+  "private": true,
+  "packageManager": "npm@10.9.7",
+  "dependencies": {
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/forms": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@angular/router": "^22.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "vue": "^3.5.42"
+  },
+  "devDependencies": {
+    "@angular-builders/custom-esbuild": "^22.0.1",
+    "@angular/build": "^22.1.7",
+    "@angular/cli": "^22.1.7",
+    "@angular/compiler-cli": "^22.1.0",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "unplugin-vue": "^7.2.0",
+    "vitest": "^4.0.8",
+    "vue-tsc": "^3.3.11"
+  }
+}

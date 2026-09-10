@@ -1,0 +1,27 @@
+<nav aria-label="Navegación principal">
+  <ul>
+    @for (item of items; track item.path) {
+      <li>
+        @if (item.children) {
+          <details [open]="item.path === activeSection()">
+            <summary>{{ item.label }}</summary>
+            <ul>
+              @for (child of item.children; track child.path) {
+                <li>
+                  <a
+                    [routerLink]="['/', item.path, child.path]"
+                    routerLinkActive
+                    ariaCurrentWhenActive="page"
+                    >{{ child.label }}</a
+                  >
+                </li>
+              }
+            </ul>
+          </details>
+        } @else {
+          <a [routerLink]="['/', item.path]" routerLinkActive ariaCurrentWhenActive="page">{{ item.label }}</a>
+        }
+      </li>
+    }
+  </ul>
+</nav>

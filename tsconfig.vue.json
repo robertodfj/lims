@@ -1,0 +1,11 @@
+/* Comprobación de tipos del editor Vue (incluidos los .vue) con vue-tsc. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["src/app/reporting/editor/**/*.ts", "src/app/reporting/editor/**/*.vue"],
+  "exclude": ["src/**/*.spec.ts"]
+}

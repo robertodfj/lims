@@ -1,0 +1,33 @@
+<h1>Informes existentes</h1>
+<p><a routerLink="/reporting">Volver a Reporting</a></p>
+
+@let list = reports();
+@if (list === null) {
+  <p>Cargando informes…</p>
+} @else if (list.length === 0) {
+  <p>No hay informes guardados. <a [routerLink]="['/reporting/editor', newReportId]">Crear un informe nuevo</a></p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Páginas</th>
+        <th scope="col">Última modificación</th>
+        <th scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (report of list; track report.id) {
+        <tr>
+          <th scope="row">{{ report.name }}</th>
+          <td>{{ report.pageCount }}</td>
+          <td>{{ report.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <a [routerLink]="['/reporting/editor', report.id]">Abrir</a>
+            <button type="button" (click)="deleteReport(report)">Eliminar</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
