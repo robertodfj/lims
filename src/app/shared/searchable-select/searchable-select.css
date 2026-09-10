@@ -1,0 +1,123 @@
+:host {
+  display: block;
+  position: relative;
+  min-width: 0;
+}
+
+.ss__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.ss__trigger:hover {
+  border-color: var(--text-tertiary);
+}
+
+.ss__trigger.is-open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.ss__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss__value.is-placeholder {
+  color: var(--text-placeholder);
+}
+
+.ss__chevron {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--t-base) var(--ease);
+}
+
+.ss__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+  z-index: var(--z-popover);
+  overflow: hidden;
+  animation: fade-in var(--t-fast) var(--ease);
+}
+
+.ss__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-tertiary);
+}
+
+.ss__search input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.ss__list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.ss__option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.ss__option:hover {
+  background: var(--surface-sunken);
+}
+
+.ss__option.is-selected {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.ss__option--clear {
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  margin-bottom: 4px;
+  padding-bottom: 9px;
+}
+
+.ss__empty {
+  padding: 14px 10px;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  text-align: center;
+}

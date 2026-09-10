@@ -1,6 +1,12 @@
 <div class="drawer-overlay" [class.is-open]="open()" (click)="requestClose()"></div>
 
-<aside class="drawer" [class.is-open]="open()" [class.drawer--lg]="size() === 'lg'" [attr.aria-hidden]="!open()">
+<aside
+  class="drawer"
+  [class.is-open]="open()"
+  [class.drawer--lg]="size() === 'lg'"
+  [class.drawer--xl]="size() === 'xl'"
+  [attr.aria-hidden]="!open()"
+>
   <header class="drawer__header">
     <h2 class="drawer__title">{{ title() }}</h2>
     <button type="button" class="btn btn--ghost btn--icon" (click)="requestClose()" aria-label="Cerrar">

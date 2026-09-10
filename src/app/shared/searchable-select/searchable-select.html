@@ -1,0 +1,40 @@
+<div class="ss" (keydown.escape)="onEscape($event)">
+  <button type="button" class="ss__trigger" [class.is-open]="open()" (click)="toggle()">
+    <span class="ss__value" [class.is-placeholder]="!selectedLabel()">{{ selectedLabel() || placeholder() }}</span>
+    <app-icon name="chevron-down" [size]="14" class="ss__chevron" [class.icon-rot-180]="open()" />
+  </button>
+
+  @if (open()) {
+    <div class="ss__panel">
+      <label class="ss__search">
+        <app-icon name="search" [size]="13" />
+        <input
+          type="text"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          placeholder="Buscar…"
+          autocomplete="off"
+        />
+      </label>
+
+      <ul class="ss__list">
+        @if (value()) {
+          <li>
+            <button type="button" class="ss__option ss__option--clear" (click)="select(null)">Sin selección</button>
+          </li>
+        }
+        @for (item of filteredItems(); track item.id) {
+          <li>
+            <button type="button" class="ss__option" [class.is-selected]="item.id === value()" (click)="select(item.id)">
+              {{ item.nombre }}
+            </button>
+          </li>
+        } @empty {
+          <li class="ss__empty">
+            {{ items().length === 0 ? 'No hay elementos registrados todavía.' : 'Sin resultados para la búsqueda.' }}
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

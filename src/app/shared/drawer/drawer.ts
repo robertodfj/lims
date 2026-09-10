@@ -12,7 +12,7 @@ import { Icon } from '../icon/icon';
 export class Drawer {
   readonly open = input(false);
   readonly title = input('');
-  readonly size = input<'md' | 'lg'>('md');
+  readonly size = input<'md' | 'lg' | 'xl'>('md');
   readonly closed = output<void>();
 
   @HostListener('document:keydown.escape')
