@@ -1,0 +1,6 @@
+[
+  { "id": "num", "nombre": "Numérico" },
+  { "id": "alfanum", "nombre": "Alfanumérico" },
+  { "id": "pos-neg", "nombre": "Positivo / Negativo" },
+  { "id": "texto-libre", "nombre": "Texto libre" }
+]

@@ -1,0 +1,6 @@
+[
+  { "id": "tubo-edta", "nombre": "Tubo EDTA" },
+  { "id": "tubo-seco", "nombre": "Tubo seco" },
+  { "id": "tubo-citrato", "nombre": "Tubo citrato" },
+  { "id": "frasco-orina", "nombre": "Frasco de orina" }
+]

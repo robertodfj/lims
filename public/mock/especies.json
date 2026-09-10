@@ -1,0 +1,6 @@
+[
+  { "id": "humana", "nombre": "Humana" },
+  { "id": "canina", "nombre": "Canina" },
+  { "id": "felina", "nombre": "Felina" },
+  { "id": "equina", "nombre": "Equina" }
+]
