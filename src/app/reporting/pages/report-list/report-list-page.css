@@ -1,8 +1,13 @@
-.report-list__back {
-  color: var(--accent);
-  font-weight: 500;
+:host {
+  display: block;
 }
 
-.report-list__back:hover {
-  text-decoration: underline;
+.name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.code-editor-mount {
+  height: 100%;
 }

@@ -20,7 +20,8 @@ export type IconName =
   | 'user'
   | 'inbox'
   | 'sparkle'
-  | 'send';
+  | 'send'
+  | 'code';
 
 /** Set mínimo de iconos de línea (20x20, trazo 1.6) usado en toda la app. */
 @Component({
@@ -125,6 +126,10 @@ export type IconName =
         @case ('send') {
           <path d="M17 3L3 9.2l5.3 2 2 5.3L17 3z" />
           <path d="M8.3 11.2 17 3" />
+        }
+        @case ('code') {
+          <path d="M7 6L2.5 10 7 14" />
+          <path d="M13 6l4.5 4-4.5 4" />
         }
       }
     </svg>

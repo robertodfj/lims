@@ -1,11 +1,14 @@
 <div class="page">
   <div class="page-header">
     <div>
-      <h1 class="page-header__title">Informes existentes</h1>
-      <p class="page-header__meta"><a class="report-list__back" routerLink="/reporting">Volver a Reporting</a></p>
+      <h1 class="page-header__title">Reporting</h1>
+      <p class="page-header__meta">Informes existentes</p>
     </div>
     <div class="page-header__actions">
-      <a class="btn btn--primary" [routerLink]="['/reporting/editor', newReportId]">Crear informe</a>
+      <button type="button" class="btn btn--primary" (click)="openCreateModal()">
+        <app-icon name="plus" [size]="14" />
+        Crear informe
+      </button>
     </div>
   </div>
 
@@ -16,7 +19,9 @@
     <div class="empty-state">
       <p class="empty-state__title">No hay informes guardados</p>
       <p class="empty-state__desc">Crea tu primer informe para verlo listado aquí.</p>
-      <a class="btn btn--secondary empty-state__action" [routerLink]="['/reporting/editor', newReportId]">Crear un informe nuevo</a>
+      <button type="button" class="btn btn--secondary empty-state__action" (click)="openCreateModal()">
+        Crear informe
+      </button>
     </div>
   } @else {
     <div class="table-wrap">
@@ -24,7 +29,6 @@
         <thead>
           <tr>
             <th scope="col">Nombre</th>
-            <th scope="col" class="is-num">Páginas</th>
             <th scope="col">Última modificación</th>
             <th scope="col" class="is-num">Acciones</th>
           </tr>
@@ -33,13 +37,27 @@
           @for (report of list; track report.id) {
             <tr>
               <td class="cell-primary">{{ report.name }}</td>
-              <td class="is-num cell-muted">{{ report.pageCount }}</td>
               <td class="cell-muted">{{ report.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td class="is-num">
-                <div class="row-actions">
-                  <a class="btn btn--ghost btn--sm" [routerLink]="['/reporting/editor', report.id]">Abrir</a>
-                  <button type="button" class="btn btn--danger-ghost btn--sm" (click)="deleteReport(report)">Eliminar</button>
-                </div>
+                @if (confirmDeleteId() === report.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(report.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openRenameModal(report)" aria-label="Editar nombre">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openAdvancedEdit(report)" aria-label="Edición avanzada">
+                      <app-icon name="code" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(report.id)" aria-label="Eliminar">
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
               </td>
             </tr>
           }
@@ -48,3 +66,38 @@
     </div>
   }
 </div>
+
+<app-modal [open]="nameModalOpen()" [title]="nameModalMode() === 'create' ? 'Crear informe' : 'Editar nombre'" (closed)="closeNameModal()">
+  <form class="name-form" (ngSubmit)="saveName()">
+    <div class="field">
+      <label class="field__label" for="report-name">Nombre del informe</label>
+      <input
+        id="report-name"
+        class="input"
+        type="text"
+        required
+        [ngModel]="nameDraft()"
+        (ngModelChange)="nameDraft.set($event)"
+        name="reportName"
+      />
+    </div>
+  </form>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeNameModal()">Cancelar</button>
+    <button type="button" class="btn btn--primary" (click)="saveName()">Guardar</button>
+  </div>
+</app-modal>
+
+<app-modal [open]="advancedEditOpen()" size="xl" [title]="'Edición avanzada — ' + (advancedEditReport()?.name ?? '')" (closed)="closeAdvancedEdit()">
+  @if (advancedEditReport()) {
+    <div #codeEditorMount class="code-editor-mount"></div>
+  }
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeAdvancedEdit()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="savingAdvanced()" (click)="saveAdvancedEdit()">
+      {{ savingAdvanced() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-modal>

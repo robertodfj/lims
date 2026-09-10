@@ -5,3 +5,6 @@ declare module '*.vue' {
   const component: DefineComponent<object, object, unknown>;
   export default component;
 }
+
+// Imports de efecto secundario de hojas de estilo (p. ej. '@vue/repl/style.css').
+declare module '*.css';
