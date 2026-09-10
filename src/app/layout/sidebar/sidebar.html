@@ -1,27 +1,58 @@
-<nav aria-label="Navegación principal">
+<div class="sidebar__brand">
+  <a routerLink="/dashboard" class="brand">
+    <span class="brand__mark"><span></span><span></span></span>
+    <span class="brand__name">LIMS</span>
+  </a>
+</div>
+
+<nav class="sidebar__nav" aria-label="Navegación principal">
   <ul>
     @for (item of items; track item.path) {
       <li>
         @if (item.children) {
-          <details [open]="item.path === activeSection()">
-            <summary>{{ item.label }}</summary>
-            <ul>
+          <button
+            type="button"
+            class="nav-group"
+            [class.is-active]="activeSection() === item.path"
+            (click)="toggle(item)"
+            [attr.aria-expanded]="isExpanded(item)"
+          >
+            <app-icon [name]="iconFor(item)" [size]="16" />
+            <span class="nav-group__label">{{ item.label }}</span>
+            <app-icon name="chevron-down" [size]="14" class="nav-group__chevron" [class.icon-rot-180]="isExpanded(item)" />
+          </button>
+
+          @if (isExpanded(item)) {
+            <ul class="nav-sublist">
               @for (child of item.children; track child.path) {
                 <li>
                   <a
+                    class="nav-link nav-link--sub"
                     [routerLink]="['/', item.path, child.path]"
-                    routerLinkActive
+                    routerLinkActive="is-active"
                     ariaCurrentWhenActive="page"
+                    [title]="child.label"
                     >{{ child.label }}</a
                   >
                 </li>
               }
             </ul>
-          </details>
+          }
         } @else {
-          <a [routerLink]="['/', item.path]" routerLinkActive ariaCurrentWhenActive="page">{{ item.label }}</a>
+          <a class="nav-link" [routerLink]="['/', item.path]" routerLinkActive="is-active" ariaCurrentWhenActive="page">
+            <app-icon [name]="iconFor(item)" [size]="16" />
+            <span>{{ item.label }}</span>
+          </a>
         }
       </li>
     }
   </ul>
 </nav>
+
+<div class="sidebar__account">
+  <span class="account__avatar">R</span>
+  <span class="account__info">
+    <span class="account__name">Roberto</span>
+    <span class="account__email">robertodfj93&#64;gmail.com</span>
+  </span>
+</div>

@@ -1,9 +1,32 @@
-<header>
-  <p><a routerLink="/dashboard">LIMS</a></p>
-</header>
+<div class="shell">
+  <aside class="shell__sidebar">
+    <app-sidebar />
+  </aside>
 
-<app-sidebar />
+  <div class="shell__main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        @for (crumb of breadcrumb(); track crumb; let last = $last) {
+          <span class="breadcrumb__item" [class.is-last]="last">{{ crumb }}</span>
+          @if (!last) {
+            <span class="breadcrumb__sep">/</span>
+          }
+        }
+      </div>
 
-<main>
-  <router-outlet />
-</main>
+      <div class="topbar__right">
+        <label class="search-input topbar__search">
+          <app-icon name="search" [size]="15" />
+          <input class="input" type="text" placeholder="Buscar…" />
+        </label>
+        <button type="button" class="account-btn" aria-label="Cuenta">
+          <app-icon name="user" [size]="15" />
+        </button>
+      </div>
+    </header>
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
