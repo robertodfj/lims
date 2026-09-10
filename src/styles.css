@@ -64,6 +64,8 @@
   --z-overlay: 39;
   --z-drawer: 40;
   --z-popover: 50;
+  --z-overlay-top: 59;
+  --z-modal-top: 60;
 
   color-scheme: light;
 }

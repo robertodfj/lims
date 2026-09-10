@@ -1,8 +1,9 @@
-<div class="modal-overlay" [class.is-open]="open()" (click)="requestClose()"></div>
+<div class="modal-overlay" [class.is-open]="open()" [class.modal-overlay--elevated]="elevated()" (click)="requestClose()"></div>
 
 <div
   class="modal"
   [class.is-open]="open()"
+  [class.modal--elevated]="elevated()"
   [class.modal--sm]="size() === 'sm'"
   [class.modal--md]="size() === 'md'"
   [class.modal--lg]="size() === 'lg'"

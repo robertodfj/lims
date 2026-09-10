@@ -13,6 +13,8 @@ export class Modal {
   readonly open = input(false);
   readonly title = input('');
   readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('sm');
+  /** Para apilar un modal (p. ej. una confirmación) por encima de otro ya abierto. */
+  readonly elevated = input(false);
   readonly closed = output<void>();
 
   @HostListener('document:keydown.escape')
