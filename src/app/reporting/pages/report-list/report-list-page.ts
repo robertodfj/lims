@@ -10,6 +10,18 @@ import { Modal } from '../../../shared/modal/modal';
 
 type NameModalMode = 'create' | 'rename';
 
+/**
+ * @vue/repl sincroniza el contenido del editor con el store con un debounce interno
+ * de 250ms (no configurable). Leer el código justo tras la última pulsación puede
+ * devolver una versión desactualizada, así que antes de leerlo para guardar esperamos
+ * un poco más que ese margen.
+ */
+const EDITOR_STORE_SYNC_DELAY_MS = 300;
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 @Component({
   selector: 'app-report-list-page',
   imports: [DatePipe, FormsModule, Icon, Modal],
@@ -31,7 +43,12 @@ export class ReportListPage {
   protected readonly advancedEditReport = signal<SavedReportDocument | null>(null);
   protected readonly savingAdvanced = signal(false);
   protected readonly confirmDiscardOpen = signal(false);
-  private originalCode: string | null = null;
+  /**
+   * Se marca de forma síncrona con el primer evento `input` real del editor, sin
+   * depender del debounce interno de @vue/repl: así el aviso de "salir sin guardar"
+   * no puede perderse por una lectura de código todavía no sincronizada.
+   */
+  private hasUnsavedChanges = false;
 
   protected readonly confirmDeleteId = signal<string | null>(null);
 
@@ -55,6 +72,10 @@ export class ReportListPage {
             // El modal pudo cerrarse mientras se cargaba el chunk.
             if (this.advancedEditReport()?.id === report.id) {
               this.codeEditor = mountReportCodeEditor(target, report.code);
+              // Evento nativo del textarea de CodeMirror: llega antes que cualquier
+              // sincronización reactiva interna de @vue/repl, así que es la señal
+              // fiable de que hay cambios sin guardar.
+              target.addEventListener('input', () => (this.hasUnsavedChanges = true));
             }
           });
         }
@@ -104,7 +125,7 @@ export class ReportListPage {
     if (!full) {
       return;
     }
-    this.originalCode = full.code;
+    this.hasUnsavedChanges = false;
     this.advancedEditReport.set(full);
     this.advancedEditOpen.set(true);
   }
@@ -114,9 +135,7 @@ export class ReportListPage {
     if (this.confirmDiscardOpen()) {
       return;
     }
-    const currentCode = this.codeEditor?.getCode();
-    const isDirty = currentCode != null && currentCode !== this.originalCode;
-    if (isDirty) {
+    if (this.hasUnsavedChanges) {
       this.confirmDiscardOpen.set(true);
     } else {
       this.closeAdvancedEdit();
@@ -136,19 +155,26 @@ export class ReportListPage {
     this.advancedEditOpen.set(false);
     this.advancedEditReport.set(null);
     this.confirmDiscardOpen.set(false);
-    this.originalCode = null;
+    this.hasUnsavedChanges = false;
   }
 
   protected async saveAdvancedEdit(): Promise<void> {
     const report = this.advancedEditReport();
-    const code = this.codeEditor?.getCode();
-    if (!report || code == null) {
+    if (!report) {
       return;
     }
 
     this.savingAdvanced.set(true);
     try {
+      if (this.hasUnsavedChanges) {
+        await wait(EDITOR_STORE_SYNC_DELAY_MS);
+      }
+      const code = this.codeEditor?.getCode();
+      if (code == null) {
+        return;
+      }
       await this.repository.save({ ...report, code });
+      this.hasUnsavedChanges = false;
       this.closeAdvancedEdit();
       await this.loadReports();
     } finally {
