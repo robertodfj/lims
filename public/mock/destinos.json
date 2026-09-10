@@ -1,0 +1,5 @@
+[
+  { "id": "correo", "nombre": "Correo postal" },
+  { "id": "email", "nombre": "Email" },
+  { "id": "recogida", "nombre": "Recogida en mano" }
+]

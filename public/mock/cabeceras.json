@@ -1,0 +1,4 @@
+[
+  { "id": "cab-general", "nombre": "Cabecera general" },
+  { "id": "cab-urgencias", "nombre": "Cabecera urgencias" }
+]

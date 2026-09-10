@@ -1,0 +1,18 @@
+[
+  { "id": "es-m", "nombre": "Madrid", "paisId": "es" },
+  { "id": "es-b", "nombre": "Barcelona", "paisId": "es" },
+  { "id": "es-v", "nombre": "Valencia", "paisId": "es" },
+  { "id": "es-se", "nombre": "Sevilla", "paisId": "es" },
+  { "id": "es-na", "nombre": "Navarra", "paisId": "es" },
+  { "id": "es-viz", "nombre": "Vizcaya", "paisId": "es" },
+  { "id": "es-ma", "nombre": "Málaga", "paisId": "es" },
+  { "id": "es-al", "nombre": "Alicante", "paisId": "es" },
+  { "id": "es-za", "nombre": "Zaragoza", "paisId": "es" },
+  { "id": "es-co", "nombre": "A Coruña", "paisId": "es" },
+  { "id": "pt-li", "nombre": "Lisboa", "paisId": "pt" },
+  { "id": "pt-po", "nombre": "Porto", "paisId": "pt" },
+  { "id": "pt-fa", "nombre": "Faro", "paisId": "pt" },
+  { "id": "fr-par", "nombre": "París", "paisId": "fr" },
+  { "id": "fr-pyr", "nombre": "Pirineos Atlánticos", "paisId": "fr" },
+  { "id": "fr-tou", "nombre": "Toulouse", "paisId": "fr" }
+]

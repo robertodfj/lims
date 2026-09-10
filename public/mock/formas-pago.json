@@ -1,0 +1,6 @@
+[
+  { "id": "contado", "nombre": "Contado" },
+  { "id": "transferencia", "nombre": "Transferencia" },
+  { "id": "domiciliado", "nombre": "Recibo domiciliado" },
+  { "id": "credito-30", "nombre": "Crédito 30 días" }
+]

@@ -1,0 +1,352 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Procedencias</h1>
+      <p class="page-header__meta">{{ filtered().length }} procedencias registradas</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--primary" (click)="openNew()">
+        <app-icon name="plus" [size]="14" />
+        Nueva procedencia
+      </button>
+    </div>
+  </div>
+
+  @if (procedencias() === null) {
+    <p class="page-header__meta">Cargando procedencias…</p>
+  } @else {
+    <div class="toolbar">
+      <label class="search-input toolbar__search">
+        <app-icon name="search" [size]="15" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por nombre…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
+        <option value="todos">Todos los estados</option>
+        <option value="activa">Activa</option>
+        <option value="no-activa">No activa</option>
+      </select>
+
+      <span class="toolbar__spacer"></span>
+      <span class="toolbar__count">{{ filtered().length }} resultados</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Procedencia</th>
+            <th scope="col">Población</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (procedencia of filtered(); track procedencia.id) {
+            <tr>
+              <td class="cell-primary">{{ procedencia.nombre }}</td>
+              <td class="cell-muted">{{ procedencia.poblacion || '—' }}</td>
+              <td class="cell-muted">{{ procedencia.telefono || '—' }}</td>
+              <td>
+                <span class="badge" [class.badge--success]="!procedencia.noActiva" [class.badge--neutral]="procedencia.noActiva">
+                  {{ procedencia.noActiva ? 'No activa' : 'Activa' }}
+                </span>
+              </td>
+              <td class="is-num">
+                @if (confirmDeleteId() === procedencia.id) {
+                  <div class="row-confirm">
+                    <span>¿Eliminar?</span>
+                    <button type="button" class="confirm-danger" (click)="confirmDelete(procedencia.id)">Sí</button>
+                    <button type="button" class="confirm-cancel" (click)="cancelDelete()">No</button>
+                  </div>
+                } @else {
+                  <div class="row-actions">
+                    <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="openEdit(procedencia)" aria-label="Editar">
+                      <app-icon name="pencil" [size]="14" />
+                    </button>
+                    <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" (click)="requestDelete(procedencia.id)" aria-label="Eliminar">
+                      <app-icon name="trash" [size]="14" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">
+                <div class="empty-state empty-state--inline">
+                  <p class="empty-state__title">Sin resultados</p>
+                  <p class="empty-state__desc">Ninguna procedencia coincide con los filtros aplicados.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-drawer [open]="drawerOpen()" size="xl" [title]="draft().id ? 'Editar procedencia' : 'Nueva procedencia'" (closed)="closeDrawer()">
+  <form class="procedencia-form" (ngSubmit)="save()">
+    <section class="procedencia-form__section">
+      <h3 class="section-title">Datos generales</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-nombre">Procedencia <span class="field__required">*</span></label>
+        <input
+          id="f-nombre"
+          class="input"
+          type="text"
+          required
+          maxlength="255"
+          [ngModel]="draft().nombre"
+          (ngModelChange)="updateDraft('nombre', $event)"
+          name="nombre"
+        />
+        <span class="field__hint">{{ draft().nombre.length }} / 255</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-domicilio">Domicilio</label>
+        <input
+          id="f-domicilio"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().domicilio"
+          (ngModelChange)="updateDraft('domicilio', $event)"
+          name="domicilio"
+        />
+        <span class="field__hint">{{ draft().domicilio.length }} / 255</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-poblacion">Población</label>
+          <input
+            id="f-poblacion"
+            class="input"
+            type="text"
+            maxlength="100"
+            [ngModel]="draft().poblacion"
+            (ngModelChange)="updateDraft('poblacion', $event)"
+            name="poblacion"
+          />
+          <span class="field__hint">{{ draft().poblacion.length }} / 100</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-cp">CP</label>
+          <input
+            id="f-cp"
+            class="input"
+            type="text"
+            maxlength="7"
+            [ngModel]="draft().cp"
+            (ngModelChange)="updateDraft('cp', $event)"
+            name="cp"
+          />
+          <span class="field__hint">{{ draft().cp.length }} / 7</span>
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">País</label>
+          <app-searchable-select [items]="paises()" [value]="draft().paisId" (valueChange)="onPaisChange($event)" />
+        </div>
+        <div class="field">
+          <label class="field__label">Provincia</label>
+          <app-searchable-select
+            [items]="provinciasDelPais()"
+            [value]="draft().provinciaId"
+            [emptyMessage]="draft().paisId ? null : 'Selecciona primero un país.'"
+            (valueChange)="updateDraft('provinciaId', $event)"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="procedencia-form__section">
+      <h3 class="section-title">Contacto</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-personaContacto">Persona de contacto</label>
+        <input
+          id="f-personaContacto"
+          class="input"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft().personaContacto"
+          (ngModelChange)="updateDraft('personaContacto', $event)"
+          name="personaContacto"
+        />
+        <span class="field__hint">{{ draft().personaContacto.length }} / 255</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-telefono">Teléfono</label>
+          <input
+            id="f-telefono"
+            class="input"
+            type="text"
+            maxlength="25"
+            [ngModel]="draft().telefono"
+            (ngModelChange)="updateDraft('telefono', $event)"
+            name="telefono"
+          />
+          <span class="field__hint">{{ draft().telefono.length }} / 25</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-movil">Móvil</label>
+          <input
+            id="f-movil"
+            class="input"
+            type="text"
+            maxlength="25"
+            [ngModel]="draft().movil"
+            (ngModelChange)="updateDraft('movil', $event)"
+            name="movil"
+          />
+          <span class="field__hint">{{ draft().movil.length }} / 25</span>
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-email">E-mail</label>
+          <input
+            id="f-email"
+            class="input"
+            type="email"
+            maxlength="255"
+            [ngModel]="draft().email"
+            (ngModelChange)="updateDraft('email', $event)"
+            name="email"
+          />
+          <span class="field__hint">{{ draft().email.length }} / 255</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-fax">Fax</label>
+          <input
+            id="f-fax"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().fax"
+            (ngModelChange)="updateDraft('fax', $event)"
+            name="fax"
+          />
+          <span class="field__hint">{{ draft().fax.length }} / 50</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nif">NIF</label>
+        <input
+          id="f-nif"
+          class="input"
+          type="text"
+          maxlength="15"
+          [ngModel]="draft().nif"
+          (ngModelChange)="updateDraft('nif', $event)"
+          name="nif"
+        />
+        <span class="field__hint">{{ draft().nif.length }} / 15</span>
+      </div>
+    </section>
+
+    <section class="procedencia-form__section">
+      <h3 class="section-title">Facturación y envío</h3>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Cabeceras</label>
+          <app-searchable-select
+            [items]="cabeceras()"
+            [value]="draft().cabeceraId"
+            (valueChange)="updateDraft('cabeceraId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Forma de pago</label>
+          <app-searchable-select
+            [items]="formasPago()"
+            [value]="draft().formaPagoId"
+            (valueChange)="updateDraft('formaPagoId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-cuentaBancaria">Cuenta bancaria</label>
+          <input
+            id="f-cuentaBancaria"
+            class="input"
+            type="text"
+            maxlength="40"
+            [ngModel]="draft().cuentaBancaria"
+            (ngModelChange)="updateDraft('cuentaBancaria', $event)"
+            name="cuentaBancaria"
+          />
+          <span class="field__hint">{{ draft().cuentaBancaria.length }} / 40</span>
+        </div>
+        <div class="field">
+          <label class="field__label">Destino</label>
+          <app-searchable-select
+            [items]="destinos()"
+            [value]="draft().destinoId"
+            (valueChange)="updateDraft('destinoId', $event)"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="procedencia-form__section">
+      <h3 class="section-title">Observaciones y opciones</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-observaciones">Observaciones</label>
+        <textarea
+          id="f-observaciones"
+          class="textarea"
+          [ngModel]="draft().observaciones"
+          (ngModelChange)="updateDraft('observaciones', $event)"
+          name="observaciones"
+        ></textarea>
+      </div>
+
+      <div class="checkbox-grid">
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().avisoEnPeticiones"
+            (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+            name="avisoEnPeticiones"
+          />
+          Aviso en peticiones
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" [ngModel]="draft().noActiva" (ngModelChange)="updateDraft('noActiva', $event)" name="noActiva" />
+          No activa
+        </label>
+      </div>
+    </section>
+  </form>
+
+  <div drawerFooter>
+    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</app-drawer>
