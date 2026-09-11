@@ -782,21 +782,42 @@
                       aria-label="Validado"
                     />
                   </td>
-                  <td class="cell-muted">{{ item.codigo }}</td>
+                  <td class="cell-muted">
+                    @if (item.laboratorioColor) {
+                      <span
+                        class="resultados-table__lab-dot"
+                        [style.background]="item.laboratorioColor"
+                        [title]="'Laboratorio externo: ' + item.laboratorioNombre"
+                      ></span>
+                    }
+                    {{ item.codigo }}
+                  </td>
                   <td class="cell-primary">{{ item.nombre }}</td>
                   <td>
                     @if (item.tipoResultadoId === 'agrupacion-pruebas') {
                       <span class="cell-muted">—</span>
                     } @else {
-                      <input
-                        class="input resultados-table__resultado"
-                        [class.is-alto]="item.desviacion === 'alto'"
-                        [class.is-bajo]="item.desviacion === 'bajo'"
-                        type="text"
-                        [ngModel]="item.linea.resultado"
-                        (ngModelChange)="updateTecnicaResultado(item.linea.tecnicaId, $event)"
-                        [name]="'resultado-' + item.linea.tecnicaId"
-                      />
+                      <div class="resultados-table__resultado-cell">
+                        <input
+                          class="input resultados-table__resultado"
+                          [class.is-alto]="item.desviacion === 'alto'"
+                          [class.is-bajo]="item.desviacion === 'bajo'"
+                          type="text"
+                          [ngModel]="item.linea.resultado"
+                          (ngModelChange)="updateTecnicaResultado(item.linea.tecnicaId, $event)"
+                          [name]="'resultado-' + item.linea.tecnicaId"
+                        />
+                        <button
+                          type="button"
+                          class="btn btn--ghost btn--icon btn--sm resultados-table__comentario-btn"
+                          [class.has-comentario]="!!item.linea.comentario"
+                          [title]="item.linea.comentario || 'Añadir comentario'"
+                          (click)="abrirComentarioTecnica(item.linea.tecnicaId)"
+                          aria-label="Comentario del resultado"
+                        >
+                          <app-icon name="message-circle" [size]="15" />
+                        </button>
+                      </div>
                     }
                   </td>
                   <td class="cell-muted">{{ item.unidad || '—' }}</td>
@@ -891,6 +912,89 @@
     <button type="button" class="btn btn--secondary" (click)="cerrarOfrecerCrearPaciente()">Cancelar</button>
     <button type="button" class="btn btn--primary" (click)="crearPacienteDesdeBusqueda()">Crear paciente</button>
   </div>
+</app-modal>
+
+<app-modal
+  [open]="comentarioTecnicaId() !== null"
+  title="Comentario del resultado"
+  size="md"
+  (closed)="cerrarComentarioTecnica()"
+>
+  <p class="resultado-comentario__tecnica">{{ comentarioTecnicaNombre() }}</p>
+
+  @if (comentarioModo() === 'elegir') {
+    <div>
+      <div class="resultado-comentario__tabs">
+        <button
+          type="button"
+          class="resultado-comentario__tab"
+          [class.is-active]="comentarioTab() === 'asociados'"
+          (click)="comentarioTab.set('asociados')"
+        >
+          Asociados
+        </button>
+        <button
+          type="button"
+          class="resultado-comentario__tab"
+          [class.is-active]="comentarioTab() === 'todos'"
+          (click)="comentarioTab.set('todos')"
+        >
+          Todos
+        </button>
+      </div>
+
+      <ul class="resultado-comentario__list">
+        @for (comentario of comentariosParaElegir(); track comentario.id) {
+          <li>
+            <button type="button" class="resultado-comentario__item" (click)="elegirComentario(comentario)">
+              <span class="resultado-comentario__item-nombre">{{ comentario.nombre }}</span>
+            </button>
+          </li>
+        } @empty {
+          <li class="resultado-comentario__empty">
+            @if (comentarioTab() === 'asociados') {
+              Esta técnica no tiene comentarios asociados todavía. Prueba en la pestaña "Todos".
+            } @else {
+              No hay comentarios creados en Mantenimientos / Comentarios.
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  } @else {
+    <div>
+      @if (comentariosAsociados().length > 0 || comentarios().length > 0) {
+        <button type="button" class="resultado-comentario__back" (click)="volverAElegirComentario()">
+          <app-icon name="arrow-left" [size]="13" />
+          Elegir de la lista
+        </button>
+      }
+
+      <textarea
+        class="textarea resultado-comentario__textarea"
+        [ngModel]="comentarioTexto()"
+        (ngModelChange)="comentarioTexto.set($event)"
+        name="comentarioTexto"
+        placeholder="Escriba el comentario para este resultado…"
+      ></textarea>
+    </div>
+  }
+
+  @if (comentarioModo() === 'elegir') {
+    <div modalFooter>
+      <button type="button" class="btn btn--secondary" (click)="cerrarComentarioTecnica()">Cancelar</button>
+      <button type="button" class="btn btn--primary" (click)="comentarioModo.set('editar')">Escribir a mano</button>
+    </div>
+  } @else {
+    <div modalFooter>
+      @if (comentarioLineaActual()?.comentario) {
+        <button type="button" class="btn btn--danger-ghost" (click)="borrarComentarioTecnica()">Quitar comentario</button>
+      }
+      <span class="toolbar__spacer"></span>
+      <button type="button" class="btn btn--secondary" (click)="cerrarComentarioTecnica()">Cancelar</button>
+      <button type="button" class="btn btn--primary" (click)="guardarComentarioTecnica()">Guardar</button>
+    </div>
+  }
 </app-modal>
 
 <app-tecnica-edit-drawer

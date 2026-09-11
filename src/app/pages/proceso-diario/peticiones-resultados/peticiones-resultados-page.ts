@@ -10,8 +10,11 @@ import { Modal } from '../../../shared/modal/modal';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { createEmptyPaciente, Paciente } from '../../mantenimientos/base-pacientes/paciente.model';
 import { PACIENTE_REPOSITORY } from '../../mantenimientos/base-pacientes/base-pacientes.tokens';
+import { Comentario } from '../../mantenimientos/comentarios/comentario.model';
+import { COMENTARIO_REPOSITORY } from '../../mantenimientos/comentarios/comentarios.tokens';
 import { DESTINO_REPOSITORY } from '../../mantenimientos/destino-informes/destinos.tokens';
 import { GRUPO_REPOSITORY } from '../../mantenimientos/grupos-tecnicas/grupos-tecnicas.tokens';
+import { LaboratorioReferencia } from '../../mantenimientos/laboratorios-referencia/laboratorio-referencia.model';
 import { LABORATORIO_REFERENCIA_REPOSITORY } from '../../mantenimientos/laboratorios-referencia/laboratorios-referencia.tokens';
 import { Peticionario } from '../../mantenimientos/peticionarios/peticionario.model';
 import { Procedencia } from '../../mantenimientos/procedencias/procedencia.model';
@@ -92,6 +95,14 @@ function normalizeAviso(value: unknown): string | null {
   return value.trim() || null;
 }
 
+/** Vista en texto plano de un comentario con formato (HTML), para usar como punto de partida editable. */
+function plainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 @Component({
   selector: 'app-peticiones-resultados-page',
   imports: [FormsModule, DatePipe, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer, Alert],
@@ -113,6 +124,7 @@ export class PeticionesResultadosPage {
   private readonly sexoEspecieRepository = inject(SEXO_ESPECIE_REPOSITORY);
   private readonly laboratorioReferenciaRepository = inject(LABORATORIO_REFERENCIA_REPOSITORY);
   private readonly reportRepository = inject(REPORT_REPOSITORY);
+  private readonly comentarioRepository = inject(COMENTARIO_REPOSITORY);
 
   protected readonly mode = signal<'list' | 'form'>('list');
   protected readonly activeTab = signal<'peticion' | 'demograficos' | 'resultados'>('peticion');
@@ -352,6 +364,7 @@ export class PeticionesResultadosPage {
         referenciaTexto: formatReferencia(tecnica),
         desviacion: computeDesviacion(tecnica, linea.resultado),
         laboratorioNombre: this.laboratoriosExternosPorId().get(tecnica?.laboratorioExternoId ?? '') ?? '',
+        laboratorioColor: this.laboratoriosExternosColorPorId().get(tecnica?.laboratorioExternoId ?? '') ?? null,
       };
     });
   });
@@ -359,6 +372,11 @@ export class PeticionesResultadosPage {
   protected readonly laboratoriosExternos = signal<readonly CatalogItem[]>([]);
   private readonly laboratoriosExternosPorId = computed(
     () => new Map(this.laboratoriosExternos().map((laboratorio) => [laboratorio.id, laboratorio.nombre])),
+  );
+  /** Registros completos de laboratorios externos (no solo id/nombre), para leer su Color asociado. */
+  protected readonly laboratoriosExternosCompletos = signal<readonly LaboratorioReferencia[]>([]);
+  private readonly laboratoriosExternosColorPorId = computed(
+    () => new Map(this.laboratoriosExternosCompletos().map((laboratorio) => [laboratorio.id, laboratorio.colorAsociado])),
   );
 
   protected readonly lineasResultadosFiltradas = computed(() => {
@@ -502,7 +520,7 @@ export class PeticionesResultadosPage {
       // Si es una Agrupación de pruebas, sus técnicas asociadas se añaden automáticamente.
       const tecnica = porId.get(tecnicaId);
       if (tecnica?.tipoResultadoId === 'agrupacion-pruebas') {
-        for (const hijaId of tecnica.tecnicasAgrupadasIds) {
+        for (const hijaId of tecnica.tecnicasAgrupadasIds ?? []) {
           if (hijaId !== tecnicaId) {
             idsAAñadir.push(hijaId);
           }
@@ -511,7 +529,7 @@ export class PeticionesResultadosPage {
 
       const nuevasLineas = idsAAñadir
         .filter((id, index) => idsAAñadir.indexOf(id) === index && !yaIncluidas.has(id))
-        .map((id): PeticionTecnica => ({ tecnicaId: id, precio: null, resultado: null, validado: false }));
+        .map((id): PeticionTecnica => ({ tecnicaId: id, precio: null, resultado: null, validado: false, comentario: null }));
 
       return nuevasLineas.length === 0 ? current : { ...current, tecnicas: [...current.tecnicas, ...nuevasLineas] };
     });
@@ -546,6 +564,93 @@ export class PeticionesResultadosPage {
       ...current,
       tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, validado } : linea)),
     }));
+  }
+
+  private updateTecnicaComentario(tecnicaId: string, comentario: string | null): void {
+    this.draft.update((current) => ({
+      ...current,
+      tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, comentario } : linea)),
+    }));
+  }
+
+  // ---------------------------------------------------------------------
+  // Modal de comentario de un resultado: al abrir, si la línea ya tiene un comentario
+  // guardado se va directo a editarlo; si no, primero se elige uno de la biblioteca
+  // (Mantenimientos / Comentarios) — de los vinculados a esta técnica, o de todos.
+  // ---------------------------------------------------------------------
+
+  protected readonly comentarios = signal<readonly Comentario[]>([]);
+
+  /** Id de técnica cuyo modal de comentario está abierto; null = cerrado. */
+  protected readonly comentarioTecnicaId = signal<string | null>(null);
+  protected readonly comentarioModo = signal<'elegir' | 'editar'>('elegir');
+  protected readonly comentarioTab = signal<'asociados' | 'todos'>('asociados');
+  protected readonly comentarioTexto = signal('');
+
+  protected readonly comentarioLineaActual = computed(() => {
+    const tecnicaId = this.comentarioTecnicaId();
+    return tecnicaId ? (this.draft().tecnicas.find((linea) => linea.tecnicaId === tecnicaId) ?? null) : null;
+  });
+
+  protected readonly comentarioTecnicaNombre = computed(() => {
+    const tecnicaId = this.comentarioTecnicaId();
+    return tecnicaId ? (this.tecnicasCompletas().find((tecnica) => tecnica.id === tecnicaId)?.nombre ?? tecnicaId) : '';
+  });
+
+  protected readonly comentariosAsociados = computed(() => {
+    const tecnicaId = this.comentarioTecnicaId();
+    return tecnicaId
+      ? this.comentarios().filter((comentario) => (comentario.tecnicasVinculadasIds ?? []).includes(tecnicaId))
+      : [];
+  });
+
+  protected readonly comentariosParaElegir = computed(() =>
+    this.comentarioTab() === 'asociados' ? this.comentariosAsociados() : this.comentarios(),
+  );
+
+  protected abrirComentarioTecnica(tecnicaId: string): void {
+    const linea = this.draft().tecnicas.find((item) => item.tecnicaId === tecnicaId);
+    const actual = linea?.comentario?.trim() ?? '';
+    this.comentarioTecnicaId.set(tecnicaId);
+    this.comentarioTab.set('asociados');
+    if (actual) {
+      this.comentarioTexto.set(actual);
+      this.comentarioModo.set('editar');
+    } else {
+      this.comentarioTexto.set('');
+      this.comentarioModo.set('elegir');
+    }
+  }
+
+  protected cerrarComentarioTecnica(): void {
+    this.comentarioTecnicaId.set(null);
+  }
+
+  protected elegirComentario(comentario: Comentario): void {
+    this.comentarioTexto.set(plainText(comentario.comentario));
+    this.comentarioModo.set('editar');
+  }
+
+  protected volverAElegirComentario(): void {
+    this.comentarioModo.set('elegir');
+  }
+
+  protected guardarComentarioTecnica(): void {
+    const tecnicaId = this.comentarioTecnicaId();
+    if (!tecnicaId) {
+      return;
+    }
+    this.updateTecnicaComentario(tecnicaId, this.comentarioTexto().trim() || null);
+    this.cerrarComentarioTecnica();
+  }
+
+  protected borrarComentarioTecnica(): void {
+    const tecnicaId = this.comentarioTecnicaId();
+    if (!tecnicaId) {
+      return;
+    }
+    this.updateTecnicaComentario(tecnicaId, null);
+    this.cerrarComentarioTecnica();
   }
 
   // ---------------------------------------------------------------------
@@ -679,6 +784,7 @@ export class PeticionesResultadosPage {
       sexosEspecies,
       grupos,
       laboratoriosExternos,
+      comentarios,
     ] = await Promise.all([
       this.sociedadRepository.list(),
       this.procedenciaRepository.list(),
@@ -691,7 +797,9 @@ export class PeticionesResultadosPage {
       this.sexoEspecieRepository.list(),
       this.grupoRepository.list(),
       this.laboratorioReferenciaRepository.list(),
+      this.comentarioRepository.list(),
     ]);
+    this.comentarios.set(comentarios);
 
     this.sociedades.set(sociedades.map((sociedad) => ({ id: sociedad.id, nombre: sociedad.nombre })));
     this.sociedadesCompletas.set(sociedades);
@@ -735,5 +843,6 @@ export class PeticionesResultadosPage {
     this.laboratoriosExternos.set(
       laboratoriosExternos.map((laboratorio) => ({ id: laboratorio.id, nombre: laboratorio.nombre })),
     );
+    this.laboratoriosExternosCompletos.set(laboratoriosExternos);
   }
 }

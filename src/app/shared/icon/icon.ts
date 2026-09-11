@@ -26,7 +26,8 @@ export type IconName =
   | 'arrow-left'
   | 'info'
   | 'alert-triangle'
-  | 'alert-circle';
+  | 'alert-circle'
+  | 'message-circle';
 
 /** Set mínimo de iconos de línea (20x20, trazo 1.6) usado en toda la app. */
 @Component({
@@ -159,6 +160,12 @@ export type IconName =
           <circle cx="10" cy="10" r="7.3" />
           <path d="M10 6.3v4.7" />
           <circle cx="10" cy="14" r="0.9" fill="currentColor" stroke="none" />
+        }
+        @case ('message-circle') {
+          <path
+            d="M3.5 10.2a6.5 6.5 0 1 1 2.8 5.3L3.3 16.5l1-3a6.4 6.4 0 0 1-.8-3.3z"
+            stroke-linejoin="round"
+          />
         }
       }
     </svg>

@@ -6,6 +6,8 @@ export interface PeticionTecnica {
   resultado: string | null;
   /** Marca el resultado como revisado/validado por el técnico (pestaña Resultados). */
   validado: boolean;
+  /** Comentario de este resultado (pestaña Resultados), elegido de Mantenimientos / Comentarios o escrito a mano. */
+  comentario: string | null;
 }
 
 export interface Peticion {
