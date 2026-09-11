@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
@@ -11,15 +12,9 @@ import { DESTINO_REPOSITORY } from '../destino-informes/destinos.tokens';
 import { createEmptyProcedencia, Procedencia } from './procedencia.model';
 import { PROCEDENCIA_REPOSITORY } from './procedencias.tokens';
 
-interface Provincia extends CatalogItem {
-  readonly paisId: string;
-}
-
-type EstadoFilter = 'todos' | 'activa' | 'no-activa';
-
 @Component({
   selector: 'app-procedencias-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './procedencias-page.html',
   styleUrl: './procedencias-page.css',
@@ -41,33 +36,17 @@ export class ProcedenciasPage {
   protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
-  protected readonly estadoFilter = signal<EstadoFilter>('todos');
 
-  protected readonly paises = signal<readonly CatalogItem[]>([]);
-  protected readonly provincias = signal<readonly Provincia[]>([]);
+  protected readonly provincias = signal<readonly CatalogItem[]>([]);
   protected readonly cabeceras = signal<readonly CatalogItem[]>([]);
   protected readonly formasPago = signal<readonly CatalogItem[]>([]);
   protected readonly destinos = signal<readonly CatalogItem[]>([]);
 
-  /** Solo las provincias del país seleccionado en el formulario: Provincia depende de País. */
-  protected readonly provinciasDelPais = computed(() => {
-    const paisId = this.draft().paisId;
-    return paisId ? this.provincias().filter((provincia) => provincia.paisId === paisId) : [];
-  });
-
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
-    const estado = this.estadoFilter();
-
-    return (this.procedencias() ?? [])
-      .filter((procedencia) => {
-        if (estado === 'activa') return !procedencia.noActiva;
-        if (estado === 'no-activa') return procedencia.noActiva;
-        return true;
-      })
-      .filter(
-        (procedencia) => !term || procedencia.nombre.toLowerCase().includes(term) || procedencia.codigo.toLowerCase().includes(term),
-      );
+    return (this.procedencias() ?? []).filter(
+      (procedencia) => !term || procedencia.nombre.toLowerCase().includes(term) || procedencia.codigo.toLowerCase().includes(term),
+    );
   });
 
   constructor() {
@@ -91,11 +70,6 @@ export class ProcedenciasPage {
     this.crud.closeDrawer();
   }
 
-  /** Cambiar de país invalida la provincia elegida: evita combinaciones país/provincia inconsistentes. */
-  protected onPaisChange(paisId: string | null): void {
-    this.draft.update((current) => ({ ...current, paisId, provinciaId: null }));
-  }
-
   protected save(): Promise<void> {
     return this.crud.save();
   }
@@ -117,14 +91,12 @@ export class ProcedenciasPage {
   }
 
   private async loadCatalogs(): Promise<void> {
-    const [paises, provincias, cabeceras, formasPago, destinos] = await Promise.all([
-      this.catalogService.load('paises'),
-      this.catalogService.load('provincias') as Promise<Provincia[]>,
+    const [provincias, cabeceras, formasPago, destinos] = await Promise.all([
+      this.catalogService.load('provincias'),
       this.catalogService.load('cabeceras'),
       this.catalogService.load('formas-pago'),
       this.destinoRepository.list(),
     ]);
-    this.paises.set(paises);
     this.provincias.set(provincias);
     this.cabeceras.set(cabeceras);
     this.formasPago.set(formasPago);

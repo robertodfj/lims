@@ -4,7 +4,6 @@ export interface Procedencia {
   nombre: string;
   domicilio: string;
   poblacion: string;
-  paisId: string | null;
   provinciaId: string | null;
   cp: string;
   personaContacto: string;
@@ -18,8 +17,8 @@ export interface Procedencia {
   cuentaBancaria: string;
   destinoId: string | null;
   observaciones: string;
-  avisoEnPeticiones: boolean;
-  noActiva: boolean;
+  /** Texto que aparece como aviso (icono de exclamación) al elegir esta procedencia en una petición. */
+  avisoEnPeticiones: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,7 +30,6 @@ export function createEmptyProcedencia(): Procedencia {
     nombre: '',
     domicilio: '',
     poblacion: '',
-    paisId: null,
     provinciaId: null,
     cp: '',
     personaContacto: '',
@@ -45,7 +43,6 @@ export function createEmptyProcedencia(): Procedencia {
     cuentaBancaria: '',
     destinoId: null,
     observaciones: '',
-    avisoEnPeticiones: false,
-    noActiva: false,
+    avisoEnPeticiones: '',
   };
 }

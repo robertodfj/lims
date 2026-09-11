@@ -5,7 +5,6 @@
     "nombre": "Consulta Centro",
     "domicilio": "Calle Alcalá 120",
     "poblacion": "Madrid",
-    "paisId": "es",
     "provinciaId": "es-m",
     "cp": "28009",
     "personaContacto": "Laura Jiménez",
@@ -17,10 +16,9 @@
     "cabeceraId": "cab-general",
     "formaPagoId": "transferencia",
     "cuentaBancaria": "ES12 3456 7890 1234 5678 9012",
-    "destinoId": "email",
+    "destinoId": "destino-clinica-demo-informes",
     "observaciones": "",
-    "avisoEnPeticiones": false,
-    "noActiva": false
+    "avisoEnPeticiones": ""
   },
   {
     "id": "proc-clinica-norte",
@@ -28,7 +26,6 @@
     "nombre": "Clínica Veterinaria Norte",
     "domicilio": "Av. Bilbao 8",
     "poblacion": "Bilbao",
-    "paisId": "es",
     "provinciaId": "es-viz",
     "cp": "48003",
     "personaContacto": "Unai Etxeberria",
@@ -40,10 +37,9 @@
     "cabeceraId": "cab-general",
     "formaPagoId": "domiciliado",
     "cuentaBancaria": "",
-    "destinoId": "correo",
+    "destinoId": "impresora-recepcion",
     "observaciones": "",
-    "avisoEnPeticiones": true,
-    "noActiva": false
+    "avisoEnPeticiones": "Solo trabaja en horario de mañana; avisar antes de enviar muestras urgentes por la tarde."
   },
   {
     "id": "proc-urgencias-hospital",
@@ -51,7 +47,6 @@
     "nombre": "Urgencias Hospital Central",
     "domicilio": "Plaza Hospital 1",
     "poblacion": "Valencia",
-    "paisId": "es",
     "provinciaId": "es-v",
     "cp": "46010",
     "personaContacto": "Mercedes Ferrer",
@@ -63,9 +58,8 @@
     "cabeceraId": "cab-urgencias",
     "formaPagoId": "credito-30",
     "cuentaBancaria": "",
-    "destinoId": "recogida",
+    "destinoId": "laboratorio-externo-norte",
     "observaciones": "Solicitudes marcadas como urgentes.",
-    "avisoEnPeticiones": true,
-    "noActiva": false
+    "avisoEnPeticiones": "Prioridad máxima: procesar en menos de 2 horas."
   }
 ]

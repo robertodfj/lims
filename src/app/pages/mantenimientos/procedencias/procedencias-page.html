@@ -28,12 +28,6 @@
         />
       </label>
 
-      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
-        <option value="todos">Todos los estados</option>
-        <option value="activa">Activa</option>
-        <option value="no-activa">No activa</option>
-      </select>
-
       <span class="toolbar__spacer"></span>
       <span class="toolbar__count">{{ filtered().length }} resultados</span>
     </div>
@@ -46,7 +40,6 @@
             <th scope="col">Procedencia</th>
             <th scope="col">Población</th>
             <th scope="col">Teléfono</th>
-            <th scope="col">Estado</th>
             <th scope="col" class="is-num">Acciones</th>
           </tr>
         </thead>
@@ -57,11 +50,6 @@
               <td class="cell-primary">{{ procedencia.nombre }}</td>
               <td class="cell-muted">{{ procedencia.poblacion || '—' }}</td>
               <td class="cell-muted">{{ procedencia.telefono || '—' }}</td>
-              <td>
-                <span class="badge" [class.badge--success]="!procedencia.noActiva" [class.badge--neutral]="procedencia.noActiva">
-                  {{ procedencia.noActiva ? 'No activa' : 'Activa' }}
-                </span>
-              </td>
               <td class="is-num">
                 @if (confirmDeleteId() === procedencia.id) {
                   <div class="row-confirm">
@@ -83,7 +71,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6">
+              <td colspan="5">
                 <div class="empty-state empty-state--inline">
                   <p class="empty-state__title">Sin resultados</p>
                   <p class="empty-state__desc">Ninguna procedencia coincide con los filtros aplicados.</p>
@@ -98,6 +86,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" size="xl" [title]="draft().id ? 'Editar procedencia' : 'Nueva procedencia'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="procedencia-form" (ngSubmit)="save()">
     <section class="procedencia-form__section">
       <h3 class="section-title">Datos generales</h3>
@@ -177,20 +166,13 @@
         </div>
       </div>
 
-      <div class="drawer-form__row">
-        <div class="field">
-          <label class="field__label">País</label>
-          <app-searchable-select [items]="paises()" [value]="draft().paisId" (valueChange)="onPaisChange($event)" />
-        </div>
-        <div class="field">
-          <label class="field__label">Provincia</label>
-          <app-searchable-select
-            [items]="provinciasDelPais()"
-            [value]="draft().provinciaId"
-            [emptyMessage]="draft().paisId ? null : 'Selecciona primero un país.'"
-            (valueChange)="updateDraft('provinciaId', $event)"
-          />
-        </div>
+      <div class="field">
+        <label class="field__label">Provincia</label>
+        <app-searchable-select
+          [items]="provincias()"
+          [value]="draft().provinciaId"
+          (valueChange)="updateDraft('provinciaId', $event)"
+        />
       </div>
     </section>
 
@@ -345,25 +327,21 @@
         ></textarea>
       </div>
 
-      <div class="checkbox-grid">
-        <label class="checkbox-field">
-          <input
-            type="checkbox"
-            [ngModel]="draft().avisoEnPeticiones"
-            (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
-            name="avisoEnPeticiones"
-          />
-          Aviso en peticiones
-        </label>
-        <label class="checkbox-field">
-          <input type="checkbox" [ngModel]="draft().noActiva" (ngModelChange)="updateDraft('noActiva', $event)" name="noActiva" />
-          No activa
-        </label>
+      <div class="field">
+        <label class="field__label" for="f-aviso">Aviso en peticiones</label>
+        <textarea
+          id="f-aviso"
+          class="textarea"
+          [ngModel]="draft().avisoEnPeticiones"
+          (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+          name="avisoEnPeticiones"
+          placeholder="Texto que se muestra con un icono de aviso al elegir esta procedencia en una petición…"
+        ></textarea>
       </div>
     </section>
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasAdvanced]="false" (cancelled)="closeDrawer()" (saved)="save()" />
   </div>
 </app-drawer>
