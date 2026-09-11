@@ -1,25 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
-import { createEmptyDestino, Destino } from './destino.model';
+import { DestinoAdvancedConfig } from './destino-advanced-config';
+import { createEmptyDestino, Destino, TIPOS_DESTINO } from './destino.model';
 import { DESTINO_REPOSITORY } from './destinos.tokens';
-
-type EstadoFilter = 'todos' | 'activo' | 'no-activo';
 
 @Component({
   selector: 'app-destino-informes-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions, DestinoAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './destino-informes-page.html',
   styleUrl: './destino-informes-page.css',
 })
 export class DestinoInformesPage {
   private readonly repository = inject(DESTINO_REPOSITORY);
+
+  protected readonly tiposDestino = TIPOS_DESTINO;
 
   protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyDestino, (value) => !!value.descripcion.trim(), {
     field: 'codigo',
@@ -33,7 +35,6 @@ export class DestinoInformesPage {
   protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
-  protected readonly estadoFilter = signal<EstadoFilter>('todos');
 
   /** Un destino no puede asociarse a sí mismo. */
   protected readonly destinosAsociables = computed<CatalogItem[]>(() => {
@@ -45,17 +46,9 @@ export class DestinoInformesPage {
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
-    const estado = this.estadoFilter();
-
-    return (this.destinos() ?? [])
-      .filter((destino) => {
-        if (estado === 'activo') return !destino.noActivo;
-        if (estado === 'no-activo') return destino.noActivo;
-        return true;
-      })
-      .filter(
-        (destino) => !term || destino.descripcion.toLowerCase().includes(term) || destino.codigo.toLowerCase().includes(term),
-      );
+    return (this.destinos() ?? []).filter(
+      (destino) => !term || destino.descripcion.toLowerCase().includes(term) || destino.codigo.toLowerCase().includes(term),
+    );
   });
 
   constructor() {
@@ -96,5 +89,9 @@ export class DestinoInformesPage {
 
   protected updateDraft<K extends keyof Destino>(key: K, value: Destino[K]): void {
     this.crud.updateDraft(key, value);
+  }
+
+  protected tipoDestinoNombre(id: string | null): string {
+    return this.tiposDestino.find((tipo) => tipo.id === id)?.nombre ?? '—';
   }
 }

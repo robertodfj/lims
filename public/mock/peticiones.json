@@ -7,8 +7,8 @@
     "procedenciaId": "proc-consulta-centro",
     "peticionarioId": "PT-001",
     "tipoPeticionId": "tipo-rutina",
-    "estadoFacturacionId": "pendiente",
-    "destinoId": "email",
+    "estadoFacturacionId": "prefacturar",
+    "destinoId": "destino-clinica-demo-informes",
     "comentario": "",
     "tecnicas": [
       { "tecnicaId": "tec-glucosa", "precio": 4.5 },
@@ -24,8 +24,8 @@
     "procedenciaId": "proc-clinica-norte",
     "peticionarioId": "PT-002",
     "tipoPeticionId": "tipo-urgente",
-    "estadoFacturacionId": "facturado",
-    "destinoId": "correo",
+    "estadoFacturacionId": "facturar",
+    "destinoId": "destino-mutua-salud-informes",
     "comentario": "Paciente con antecedentes cardíacos.",
     "tecnicas": [{ "tecnicaId": "tec-colesterol", "precio": 6 }],
     "pacienteId": "pac-martinez-ruiz"

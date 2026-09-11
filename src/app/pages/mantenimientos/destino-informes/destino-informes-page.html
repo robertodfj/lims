@@ -28,12 +28,6 @@
         />
       </label>
 
-      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
-        <option value="todos">Todos los estados</option>
-        <option value="activo">Activo</option>
-        <option value="no-activo">No activo</option>
-      </select>
-
       <span class="toolbar__spacer"></span>
       <span class="toolbar__count">{{ filtered().length }} resultados</span>
     </div>
@@ -45,7 +39,7 @@
             <th scope="col">Código</th>
             <th scope="col">Descripción</th>
             <th scope="col" class="is-num">Orden</th>
-            <th scope="col">Estado</th>
+            <th scope="col">Tipo</th>
             <th scope="col" class="is-num">Acciones</th>
           </tr>
         </thead>
@@ -55,11 +49,7 @@
               <td class="cell-muted">{{ destino.codigo }}</td>
               <td class="cell-primary">{{ destino.descripcion }}</td>
               <td class="is-num cell-muted">{{ destino.orden ?? '—' }}</td>
-              <td>
-                <span class="badge" [class.badge--success]="!destino.noActivo" [class.badge--neutral]="destino.noActivo">
-                  {{ destino.noActivo ? 'No activo' : 'Activo' }}
-                </span>
-              </td>
+              <td class="cell-muted">{{ tipoDestinoNombre(destino.tipoDestinoId) }}</td>
               <td class="is-num">
                 @if (confirmDeleteId() === destino.id) {
                   <div class="row-confirm">
@@ -96,6 +86,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar destino' : 'Nuevo destino'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>
@@ -153,6 +144,22 @@
     </div>
 
     <div class="field">
+      <label class="field__label" for="f-tipoDestino">Tipo de destino</label>
+      <select
+        id="f-tipoDestino"
+        class="select"
+        [ngModel]="draft().tipoDestinoId"
+        (ngModelChange)="updateDraft('tipoDestinoId', $event)"
+        name="tipoDestino"
+      >
+        <option [ngValue]="null">Seleccione un tipo…</option>
+        @for (tipo of tiposDestino; track tipo.id) {
+          <option [value]="tipo.id">{{ tipo.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
       <label class="field__label" for="f-observaciones">Observaciones</label>
       <textarea
         id="f-observaciones"
@@ -163,24 +170,22 @@
       ></textarea>
     </div>
 
-    <div class="checkbox-grid">
-      <label class="checkbox-field">
-        <input
-          type="checkbox"
-          [ngModel]="draft().avisoEnPeticiones"
-          (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
-          name="avisoEnPeticiones"
-        />
-        Aviso en peticiones
-      </label>
-      <label class="checkbox-field">
-        <input type="checkbox" [ngModel]="draft().noActivo" (ngModelChange)="updateDraft('noActivo', $event)" name="noActivo" />
-        No activo
-      </label>
+    <div class="field">
+      <label class="field__label" for="f-aviso">Aviso en peticiones</label>
+      <textarea
+        id="f-aviso"
+        class="textarea"
+        [ngModel]="draft().avisoEnPeticiones"
+        (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+        name="avisoEnPeticiones"
+        placeholder="Texto que se muestra con un icono de aviso al elegir este destino en una petición…"
+      ></textarea>
     </div>
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-destino-advanced-config />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>

@@ -62,13 +62,11 @@ export class LocalStorageDestinoRepository implements DestinoRepository {
 
   async nextCodigo(): Promise<string> {
     await this.ensureSeeded();
-    const maxActivo = this.readAll()
-      .filter((destino) => !destino.noActivo)
-      .reduce((max, destino) => {
-        const parsed = Number.parseInt(destino.codigo, 10);
-        return Number.isFinite(parsed) && parsed > max ? parsed : max;
-      }, 0);
-    return String(maxActivo + 1);
+    const max = this.readAll().reduce((max, destino) => {
+      const parsed = Number.parseInt(destino.codigo, 10);
+      return Number.isFinite(parsed) && parsed > max ? parsed : max;
+    }, 0);
+    return String(max + 1);
   }
 
   private ensureSeeded(): Promise<void> {

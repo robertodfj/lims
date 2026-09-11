@@ -1,32 +1,72 @@
 [
   {
-    "id": "correo",
+    "id": "destino-clinica-demo-informes",
     "codigo": "1",
-    "descripcion": "Correo postal",
+    "descripcion": "Clínica Demo SA - Informes de Resultados",
     "orden": 1,
+    "tipoDestinoId": "informes-resultados",
     "destinoAsociadoId": null,
     "observaciones": "",
-    "avisoEnPeticiones": false,
-    "noActivo": false
+    "avisoEnPeticiones": ""
   },
   {
-    "id": "email",
+    "id": "destino-clinica-demo-facturas",
     "codigo": "2",
-    "descripcion": "Email",
+    "descripcion": "Clínica Demo SA - Facturas",
     "orden": 2,
+    "tipoDestinoId": "facturas",
     "destinoAsociadoId": null,
     "observaciones": "",
-    "avisoEnPeticiones": false,
-    "noActivo": false
+    "avisoEnPeticiones": ""
   },
   {
-    "id": "recogida",
+    "id": "destino-mutua-salud-informes",
     "codigo": "3",
-    "descripcion": "Recogida en mano",
+    "descripcion": "Mutua Salud Integral - Informes de Resultados",
     "orden": 3,
+    "tipoDestinoId": "informes-resultados",
     "destinoAsociadoId": null,
     "observaciones": "",
-    "avisoEnPeticiones": false,
-    "noActivo": false
+    "avisoEnPeticiones": ""
+  },
+  {
+    "id": "destino-mutua-salud-facturas",
+    "codigo": "4",
+    "descripcion": "Mutua Salud Integral - Facturas",
+    "orden": 4,
+    "tipoDestinoId": "facturas",
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": "Requiere nº de autorización de la mutua antes de facturar."
+  },
+  {
+    "id": "impresora-recepcion",
+    "codigo": "5",
+    "descripcion": "Impresora recepción",
+    "orden": 5,
+    "tipoDestinoId": "impresion-general",
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": ""
+  },
+  {
+    "id": "laboratorio-externo-norte",
+    "codigo": "6",
+    "descripcion": "Laboratorio Externo Norte - Pedidos de Almacén",
+    "orden": 6,
+    "tipoDestinoId": "pedidos-almacen",
+    "destinoAsociadoId": null,
+    "observaciones": "Recogida diaria a las 18:00 h.",
+    "avisoEnPeticiones": ""
+  },
+  {
+    "id": "destino-clinica-demo-presupuestos",
+    "codigo": "7",
+    "descripcion": "Clínica Demo SA - Presupuestos",
+    "orden": 7,
+    "tipoDestinoId": "presupuestos",
+    "destinoAsociadoId": null,
+    "observaciones": "",
+    "avisoEnPeticiones": ""
   }
 ]

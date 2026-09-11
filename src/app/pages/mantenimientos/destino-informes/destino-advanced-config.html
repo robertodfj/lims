@@ -1,0 +1,233 @@
+<p class="avz__intro">
+  Personaliza el mensaje de correo y sus destinatarios, el formato y cifrado del archivo
+  enviado, el modelo de informe usado y las condiciones que asignarían este destino a una
+  petición de forma automática. Antes de enviar por destinos hay que configurar el servidor
+  de correo saliente (por usuario o de forma general en Opciones generales).
+</p>
+
+<details class="avz-details" open>
+  <summary>Propiedades de destino</summary>
+
+  <div class="avz-panel">
+    <label class="checkbox-field">
+      <input type="checkbox" disabled />
+      Poner marca en la edición automática
+    </label>
+    <p class="avz-panel__hint">Los informes enviados por este destino aparecerán señalados como ya informados.</p>
+
+    <div class="field">
+      <label class="field__label">Tipo de transferencia del informe</label>
+      <div class="avz-segmented">
+        <button
+          type="button"
+          class="avz-segmented__option"
+          [class.is-active]="tipoTransferencia() === 'email'"
+          (click)="setTipoTransferencia('email')"
+        >
+          Email
+        </button>
+        <button
+          type="button"
+          class="avz-segmented__option"
+          [class.is-active]="tipoTransferencia() === 'ftp'"
+          (click)="setTipoTransferencia('ftp')"
+        >
+          FTP
+        </button>
+        <button
+          type="button"
+          class="avz-segmented__option"
+          [class.is-active]="tipoTransferencia() === 'sftp'"
+          (click)="setTipoTransferencia('sftp')"
+        >
+          SFTP
+        </button>
+      </div>
+    </div>
+
+    @if (tipoTransferencia() === 'email') {
+      <div class="field">
+        <label class="field__label">Dirección de correo</label>
+        <input class="input" type="text" disabled placeholder="Varios destinatarios separados por ';'" />
+      </div>
+      <label class="checkbox-field">
+        <input type="checkbox" disabled />
+        Email petición (usar el correo de Datos demográficos)
+      </label>
+      <div class="field">
+        <label class="field__label">Asunto del correo</label>
+        <input class="input" type="text" disabled />
+      </div>
+      <div class="field">
+        <label class="field__label">Mensaje del correo</label>
+        <textarea class="textarea" disabled></textarea>
+        <span class="field__hint">
+          Admite campos predefinidos, p. ej. [R] = nº de petición, [NS] = nombre de la sociedad.
+        </span>
+      </div>
+    } @else {
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Servidor</label>
+          <input class="input" type="text" disabled />
+        </div>
+        <div class="field">
+          <label class="field__label">Puerto</label>
+          <input class="input" type="number" disabled placeholder="{{ tipoTransferencia() === 'sftp' ? '22' : '21' }}" />
+        </div>
+      </div>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Usuario</label>
+          <input class="input" type="text" disabled />
+        </div>
+        <div class="field">
+          <label class="field__label">Contraseña</label>
+          <input class="input" type="password" disabled />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label">Ruta remota</label>
+        <input class="input" type="text" disabled />
+      </div>
+    }
+  </div>
+</details>
+
+<details class="avz-details">
+  <summary>Propiedades del archivo de exportación</summary>
+
+  <div class="avz-panel">
+    <div class="field">
+      <label class="field__label">Formato de exportación</label>
+      <select class="select" disabled>
+        <option>PDF</option>
+        <option>Excel</option>
+        <option>Word</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Nombre fichero</label>
+      <input class="input" type="text" disabled placeholder="p. ej. Informe_[R]_[FP1]" />
+      <span class="field__hint">
+        Admite campos predefinidos de la muestra. [FP1]/[FE1] = fecha AAAAMMDD, [HP1]/[HE1] = hora HHMM.
+      </span>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Contraseña</label>
+      <input class="input" type="text" disabled />
+      <span class="field__hint">Opcional. Admite campos predefinidos, p. ej. [5DNI] = 5 primeros caracteres del DNI.</span>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Tipo de encriptación</label>
+      <select class="select" disabled>
+        <option>AES 128 (protege el propio PDF)</option>
+        <option>Zipcrypto (comprime y protege el ZIP)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Firma certificado digital</label>
+      <select class="select" disabled></select>
+      <span class="field__hint">
+        Las firmas se dan de alta en Procesos auxiliares / Controles especiales / Firmas digitales.
+      </span>
+    </div>
+
+    <div class="field">
+      <label class="field__label">Modo impresión</label>
+      <select class="select" disabled>
+        <option>Edición en bloque de destinos (rápido)</option>
+        <option>Edición petición a petición</option>
+        <option>Edición en bloques de destinos (informes separados)</option>
+      </select>
+    </div>
+  </div>
+</details>
+
+<details class="avz-details">
+  <summary>Modelo de informe</summary>
+
+  <div class="avz-panel">
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label">Cabecera asociada</label>
+        <select class="select" disabled></select>
+      </div>
+      <div class="field">
+        <label class="field__label">Formato de informe</label>
+        <select class="select" disabled></select>
+      </div>
+    </div>
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label">Nombre de informe</label>
+        <select class="select" disabled></select>
+      </div>
+      <div class="field">
+        <label class="field__label">Nombre de informe de grupos</label>
+        <select class="select" disabled></select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field__label">Modo (informe de grupos)</label>
+      <select class="select" disabled>
+        <option>Por muestras</option>
+        <option>Por pruebas</option>
+      </select>
+    </div>
+
+    <label class="checkbox-field">
+      <input type="checkbox" [checked]="segundaCopia()" (change)="toggleSegundaCopia()" />
+      Generar una segunda copia con una configuración distinta
+    </label>
+
+    @if (segundaCopia()) {
+      <div class="avz-second-copy">
+        <div class="drawer-form__row">
+          <div class="field">
+            <label class="field__label">Cabecera asociada (2ª copia)</label>
+            <select class="select" disabled></select>
+          </div>
+          <div class="field">
+            <label class="field__label">Formato de informe (2ª copia)</label>
+            <select class="select" disabled></select>
+          </div>
+        </div>
+        <div class="drawer-form__row">
+          <div class="field">
+            <label class="field__label">Nombre de informe (2ª copia)</label>
+            <select class="select" disabled></select>
+          </div>
+          <div class="field">
+            <label class="field__label">Nombre de informe de grupos (2ª copia)</label>
+            <select class="select" disabled></select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label">Modo (2ª copia)</label>
+          <select class="select" disabled>
+            <option>Por muestras</option>
+            <option>Por pruebas</option>
+          </select>
+        </div>
+      </div>
+    }
+  </div>
+</details>
+
+<details class="avz-details">
+  <summary>Condición</summary>
+
+  <div class="avz-panel">
+    <p class="avz-panel__hint">
+      Criterios que deben cumplir las peticiones para asignarse automáticamente a este destino.
+      Ejemplo: <code>[SOCIEDAD]=1</code> asigna este destino a toda petición con la sociedad de
+      código 1. Si varios destinos cumplen condición a la vez, se pedirá elegir cuál aplicar.
+    </p>
+    <textarea class="textarea" disabled placeholder="p. ej. [SOCIEDAD]=1"></textarea>
+  </div>
+</details>
