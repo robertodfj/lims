@@ -27,16 +27,23 @@ export class ContenedorAdvancedConfig {
   /** El botón "Prioridad" activa/desactiva mostrar el campo numérico de cada asignado. */
   protected readonly editandoPrioridad = signal(false);
 
+  /**
+   * Contenedores guardados antes de que este campo existiera pueden traer
+   * `destinosPreanaliticos` a `undefined` desde localStorage: se normaliza aquí para no romper
+   * el resto del componente.
+   */
+  private readonly asignacionesNormalizadas = computed(() => this.destinosPreanaliticos() ?? []);
+
   protected readonly asignados = computed(() => {
     const porId = new Map(this.destinos().map((destino) => [destino.id, destino]));
-    return this.destinosPreanaliticos()
+    return this.asignacionesNormalizadas()
       .map((item) => ({ item, destino: porId.get(item.destinoId) }))
       .filter((entry): entry is { item: ContenedorDestinoPreanalitico; destino: Destino } => !!entry.destino)
       .sort((a, b) => (a.item.prioridad ?? Infinity) - (b.item.prioridad ?? Infinity));
   });
 
   protected readonly disponibles = computed(() => {
-    const asignadosIds = new Set(this.destinosPreanaliticos().map((item) => item.destinoId));
+    const asignadosIds = new Set(this.asignacionesNormalizadas().map((item) => item.destinoId));
     return this.destinos().filter((destino) => !asignadosIds.has(destino.id));
   });
 
@@ -49,7 +56,7 @@ export class ContenedorAdvancedConfig {
   }
 
   protected agregar(destinoId: string): void {
-    const actuales = this.destinosPreanaliticos();
+    const actuales = this.asignacionesNormalizadas();
     if (actuales.some((item) => item.destinoId === destinoId)) {
       return;
     }
@@ -57,12 +64,12 @@ export class ContenedorAdvancedConfig {
   }
 
   protected quitar(destinoId: string): void {
-    this.destinosPreanaliticosChange.emit(this.destinosPreanaliticos().filter((item) => item.destinoId !== destinoId));
+    this.destinosPreanaliticosChange.emit(this.asignacionesNormalizadas().filter((item) => item.destinoId !== destinoId));
   }
 
   protected updatePrioridad(destinoId: string, prioridad: number | null): void {
     this.destinosPreanaliticosChange.emit(
-      this.destinosPreanaliticos().map((item) => (item.destinoId === destinoId ? { ...item, prioridad } : item)),
+      this.asignacionesNormalizadas().map((item) => (item.destinoId === destinoId ? { ...item, prioridad } : item)),
     );
   }
 

@@ -23,14 +23,21 @@ export class SoporteAdvancedConfig {
 
   protected readonly contenedores = signal<Contenedor[]>([]);
 
+  /**
+   * Soportes guardados antes de que este campo existiera pueden traer
+   * `contenedoresAsociadosIds` a `undefined` desde localStorage: se normaliza aquí para no
+   * romper el resto del componente.
+   */
+  private readonly idsNormalizados = computed(() => this.contenedoresAsociadosIds() ?? []);
+
   protected readonly contenedoresIncluidos = computed(() => {
-    const ids = this.contenedoresAsociadosIds();
+    const ids = this.idsNormalizados();
     const porId = new Map(this.contenedores().map((contenedor) => [contenedor.id, contenedor]));
     return ids.map((id) => porId.get(id)).filter((contenedor): contenedor is Contenedor => !!contenedor);
   });
 
   protected readonly contenedoresDisponibles = computed(() => {
-    const incluidos = new Set(this.contenedoresAsociadosIds());
+    const incluidos = new Set(this.idsNormalizados());
     return this.contenedores().filter((contenedor) => !incluidos.has(contenedor.id));
   });
 
@@ -39,7 +46,7 @@ export class SoporteAdvancedConfig {
   }
 
   protected agregar(contenedorId: string): void {
-    const actuales = this.contenedoresAsociadosIds();
+    const actuales = this.idsNormalizados();
     if (actuales.includes(contenedorId)) {
       return;
     }
@@ -47,7 +54,7 @@ export class SoporteAdvancedConfig {
   }
 
   protected quitar(contenedorId: string): void {
-    this.contenedoresAsociadosIdsChange.emit(this.contenedoresAsociadosIds().filter((id) => id !== contenedorId));
+    this.contenedoresAsociadosIdsChange.emit(this.idsNormalizados().filter((id) => id !== contenedorId));
   }
 
   private async loadContenedores(): Promise<void> {

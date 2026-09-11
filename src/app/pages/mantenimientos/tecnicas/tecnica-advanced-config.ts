@@ -63,16 +63,22 @@ export class TecnicaAdvancedConfig {
   protected readonly tecnicas = signal<Tecnica[]>([]);
   protected readonly resultadosAlfabeticos = signal<ResultadoAlfabetico[]>([]);
 
+  /**
+   * Técnicas guardadas antes de que este campo existiera pueden traer `tecnicasAgrupadasIds`
+   * a `undefined` desde localStorage: se normaliza aquí para no romper el resto del componente.
+   */
+  private readonly idsNormalizados = computed(() => this.tecnicasAgrupadasIds() ?? []);
+
   /** Técnicas incluidas actualmente en la agrupación, con su ficha completa. */
   protected readonly tecnicasIncluidas = computed(() => {
-    const ids = this.tecnicasAgrupadasIds();
+    const ids = this.idsNormalizados();
     const porId = new Map(this.tecnicas().map((tecnica) => [tecnica.id, tecnica]));
     return ids.map((id) => porId.get(id)).filter((tecnica): tecnica is Tecnica => !!tecnica);
   });
 
   /** Técnicas disponibles para añadir: todas menos la propia técnica y las ya incluidas. */
   protected readonly tecnicasDisponibles = computed(() => {
-    const incluidas = new Set(this.tecnicasAgrupadasIds());
+    const incluidas = new Set(this.idsNormalizados());
     const propiaId = this.tecnicaId();
     return this.tecnicas().filter((tecnica) => tecnica.id !== propiaId && !incluidas.has(tecnica.id));
   });
@@ -86,7 +92,7 @@ export class TecnicaAdvancedConfig {
   }
 
   protected agregarAgrupada(tecnicaId: string): void {
-    const actuales = this.tecnicasAgrupadasIds();
+    const actuales = this.idsNormalizados();
     if (actuales.includes(tecnicaId)) {
       return;
     }
@@ -94,7 +100,7 @@ export class TecnicaAdvancedConfig {
   }
 
   protected quitarAgrupada(tecnicaId: string): void {
-    this.tecnicasAgrupadasIdsChange.emit(this.tecnicasAgrupadasIds().filter((id) => id !== tecnicaId));
+    this.tecnicasAgrupadasIdsChange.emit(this.idsNormalizados().filter((id) => id !== tecnicaId));
   }
 
   private async loadListas(): Promise<void> {
