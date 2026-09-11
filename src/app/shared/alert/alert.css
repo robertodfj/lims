@@ -1,0 +1,53 @@
+:host {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+
+:host.alert--info {
+  background: var(--info-bg);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+:host.alert--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+:host.alert--error {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.alert__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.alert__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.alert__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.alert__message {
+  font-size: 13px;
+  line-height: 1.5;
+  /* El mensaje siempre en el texto normal del tema, no en el color de acento del aviso:
+     solo el icono/título/borde llevan el color, para que párrafos largos sigan siendo
+     cómodos de leer. */
+  color: var(--text-primary);
+}

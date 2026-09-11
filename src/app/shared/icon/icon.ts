@@ -23,7 +23,10 @@ export type IconName =
   | 'send'
   | 'code'
   | 'printer'
-  | 'arrow-left';
+  | 'arrow-left'
+  | 'info'
+  | 'alert-triangle'
+  | 'alert-circle';
 
 /** Set mínimo de iconos de línea (20x20, trazo 1.6) usado en toda la app. */
 @Component({
@@ -141,6 +144,21 @@ export type IconName =
         }
         @case ('arrow-left') {
           <path d="M16 10H4M4 10l5-5M4 10l5 5" />
+        }
+        @case ('info') {
+          <circle cx="10" cy="10" r="7.3" />
+          <circle cx="10" cy="6.6" r="0.9" fill="currentColor" stroke="none" />
+          <path d="M10 9.3v4.7" />
+        }
+        @case ('alert-triangle') {
+          <path d="M10 3.3l8 14.2H2l8-14.2z" stroke-linejoin="round" />
+          <path d="M10 8.3v3.8" />
+          <circle cx="10" cy="15" r="0.9" fill="currentColor" stroke="none" />
+        }
+        @case ('alert-circle') {
+          <circle cx="10" cy="10" r="7.3" />
+          <path d="M10 6.3v4.7" />
+          <circle cx="10" cy="14" r="0.9" fill="currentColor" stroke="none" />
         }
       }
     </svg>
