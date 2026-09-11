@@ -12,7 +12,8 @@
     "telefono": "944112233",
     "fax": "944112234",
     "observaciones": "",
-    "tecnicasAsociadasIds": ["tec-pcr-covid"]
+    "colorAsociado": "#1c7ed6",
+    "programaAsociado": ""
   },
   {
     "id": "labref-sur",
@@ -27,6 +28,7 @@
     "telefono": "954223344",
     "fax": "",
     "observaciones": "",
-    "tecnicasAsociadasIds": []
+    "colorAsociado": null,
+    "programaAsociado": ""
   }
 ]

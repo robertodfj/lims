@@ -1,0 +1,165 @@
+@if (!laboratorioId()) {
+  <p class="lab-avz__guard">Guarda el laboratorio primero para poder asociarle técnicas.</p>
+}
+
+<div class="lab-avz__section">
+  <h4 class="lab-avz__title">Color asociado</h4>
+  <p class="lab-avz__hint">
+    Identifica visualmente este laboratorio en su listado y en el código de la técnica en la
+    ventana de Resultados.
+  </p>
+  <div class="lab-avz__colors">
+    @for (color of colores; track color) {
+      <button
+        type="button"
+        class="lab-avz__color-swatch"
+        [style.background]="color"
+        [class.is-selected]="colorAsociado() === color"
+        (click)="colorAsociadoChange.emit(color)"
+        [attr.aria-label]="'Color ' + color"
+      ></button>
+    }
+    <button type="button" class="lab-avz__color-clear" [class.is-selected]="!colorAsociado()" (click)="colorAsociadoChange.emit(null)">
+      Sin color
+    </button>
+  </div>
+</div>
+
+<div class="lab-avz__section">
+  <h4 class="lab-avz__title">Programa asociado</h4>
+  <p class="lab-avz__hint">
+    Aplicación con la que, mediante un desarrollo adicional, se interconecta este laboratorio
+    (p. ej. envío automático de resultados). Informativo: hoy no existe una integración real.
+  </p>
+  <input
+    class="input"
+    type="text"
+    maxlength="120"
+    placeholder="Nombre del programa/aplicación, si existe"
+    [ngModel]="programaAsociado()"
+    (ngModelChange)="programaAsociadoChange.emit($event)"
+  />
+</div>
+
+<details class="avz-details">
+  <summary>Envío de resultados</summary>
+  <div class="avz-panel">
+    <p class="avz-panel__hint">
+      Existen dos maneras de enviar los resultados de nuestro laboratorio a este laboratorio
+      externo (ninguna tiene hoy una integración real conectada):
+    </p>
+    <p class="avz-panel__hint">
+      <strong>Programa Asociado:</strong> si existe un programa creado para enviar resultados
+      desde Proceso Diario / Laboratorios de Referencia, se selecciona en el campo "Programa
+      asociado" de más arriba.
+    </p>
+    <p class="avz-panel__hint">
+      <strong>Exportar Peticiones y Resultados:</strong> desde Proceso Diario / Peticiones y
+      Resultados, un botón de exportación manda los resultados con un programa creado para ello.
+    </p>
+  </div>
+</details>
+
+@if (laboratorioId()) {
+  <div class="lab-avz__section">
+    <h4 class="lab-avz__title">Técnicas</h4>
+    <p class="lab-avz__hint">
+      Técnicas que realiza este laboratorio. También se puede asignar desde la propia técnica,
+      en su desplegable "Laboratorio Externo" — es la misma relación.
+    </p>
+
+    <div class="avz-dual">
+      <div class="avz-dual__col">
+        <h5 class="avz-dual__title">Disponibles</h5>
+        <ul class="avz-dual__list">
+          @for (tecnica of tecnicasDisponibles(); track tecnica.id) {
+            <li class="avz-dual__item">
+              <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--icon btn--sm"
+                [disabled]="guardandoId() === tecnica.id"
+                (click)="agregar(tecnica.id)"
+                aria-label="Agregar"
+              >
+                +
+              </button>
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">No hay más técnicas disponibles.</li>
+          }
+        </ul>
+      </div>
+      <div class="avz-dual__col">
+        <h5 class="avz-dual__title">Técnicas asociadas</h5>
+        <ul class="avz-dual__list">
+          @for (tecnica of tecnicasAsociadas(); track tecnica.id) {
+            <li class="lab-avz__tecnica">
+              <div class="avz-dual__item">
+                <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+                <span class="lab-avz__tecnica-actions">
+                  <button
+                    type="button"
+                    class="btn btn--ghost btn--icon btn--sm"
+                    (click)="editandoValoresId() === tecnica.id ? cancelarValores() : editarValores(tecnica)"
+                    aria-label="Editar valores"
+                    title="Valores (código, precio, incidencias)"
+                  >
+                    €
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--ghost btn--icon btn--sm"
+                    [disabled]="guardandoId() === tecnica.id"
+                    (click)="quitar(tecnica.id)"
+                    aria-label="Quitar"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+
+              @if (editandoValoresId() === tecnica.id) {
+                <div class="lab-avz__valores">
+                  <div class="field">
+                    <label class="field__label">Código Laboratorio</label>
+                    <input
+                      class="input"
+                      type="text"
+                      [ngModel]="valoresDraft().codigoLaboratorio"
+                      (ngModelChange)="updateValoresDraft('codigoLaboratorio', $event)"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="field__label">Precio</label>
+                    <input
+                      class="input"
+                      type="number"
+                      step="0.01"
+                      [ngModel]="valoresDraft().precio"
+                      (ngModelChange)="updateValoresDraft('precio', $event)"
+                    />
+                  </div>
+                  <div class="field">
+                    <label class="field__label">Incidencias</label>
+                    <textarea
+                      class="textarea"
+                      [ngModel]="valoresDraft().incidencias"
+                      (ngModelChange)="updateValoresDraft('incidencias', $event)"
+                    ></textarea>
+                  </div>
+                  <div class="lab-avz__valores-actions">
+                    <button type="button" class="btn btn--secondary btn--sm" (click)="cancelarValores()">Cancelar</button>
+                    <button type="button" class="btn btn--primary btn--sm" (click)="guardarValores(tecnica)">Guardar valores</button>
+                  </div>
+                </div>
+              }
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">Ninguna técnica asociada todavía.</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+}

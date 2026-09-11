@@ -39,6 +39,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th scope="col"></th>
             <th scope="col">Código</th>
             <th scope="col">Nombre</th>
             <th scope="col">Población</th>
@@ -50,11 +51,16 @@
         <tbody>
           @for (laboratorio of filtered(); track laboratorio.id) {
             <tr>
+              <td>
+                @if (laboratorio.colorAsociado) {
+                  <span class="lab-color-dot" [style.background]="laboratorio.colorAsociado" [title]="laboratorio.colorAsociado"></span>
+                }
+              </td>
               <td class="cell-muted">{{ laboratorio.codigo }}</td>
               <td class="cell-primary">{{ laboratorio.nombre }}</td>
               <td class="cell-muted">{{ laboratorio.poblacion || '—' }}</td>
               <td class="cell-muted">{{ laboratorio.telefono || '—' }}</td>
-              <td class="is-num cell-muted">{{ laboratorio.tecnicasAsociadasIds.length }}</td>
+              <td class="is-num cell-muted">{{ numTecnicasPorLaboratorio().get(laboratorio.id) ?? 0 }}</td>
               <td class="is-num">
                 @if (confirmDeleteId() === laboratorio.id) {
                   <div class="row-confirm">
@@ -81,7 +87,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6">
+              <td colspan="7">
                 <div class="empty-state empty-state--inline">
                   <p class="empty-state__title">Sin resultados</p>
                   <p class="empty-state__desc">Ningún laboratorio de referencia coincide con la búsqueda.</p>
@@ -260,40 +266,17 @@
         ></textarea>
       </div>
     </section>
-
-    <section class="lab-form__section">
-      <h3 class="section-title">Configuración avanzada</h3>
-      <p class="lab-form__hint">
-        Técnicas que este laboratorio de referencia realiza, para poder derivarlas desde el sistema.
-      </p>
-
-      <div class="field">
-        <label class="field__label">Añadir técnica</label>
-        <app-searchable-select
-          [items]="tecnicasDisponibles()"
-          [value]="null"
-          placeholder="Busque una técnica para asociarla"
-          emptyMessage="No hay más técnicas disponibles para asociar."
-          (valueChange)="addTecnica($event)"
-        />
-      </div>
-
-      <ul class="lab-tecnicas">
-        @for (tecnica of tecnicasAsociadas(); track tecnica.id) {
-          <li class="lab-tecnicas__item">
-            <span>{{ tecnica.nombre }}</span>
-            <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="removeTecnica(tecnica.id)" aria-label="Quitar técnica">
-              <app-icon name="x" [size]="13" />
-            </button>
-          </li>
-        } @empty {
-          <li class="lab-tecnicas__empty">Ninguna técnica asociada todavía.</li>
-        }
-      </ul>
-    </section>
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-laboratorio-advanced-config
+        [laboratorioId]="draft().id"
+        [colorAsociado]="draft().colorAsociado"
+        (colorAsociadoChange)="updateDraft('colorAsociado', $event)"
+        [programaAsociado]="draft().programaAsociado"
+        (programaAsociadoChange)="updateDraft('programaAsociado', $event)"
+      />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>

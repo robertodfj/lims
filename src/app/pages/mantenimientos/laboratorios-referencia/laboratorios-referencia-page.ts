@@ -9,12 +9,13 @@ import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { TECNICA_REPOSITORY } from '../tecnicas/tecnicas.tokens';
+import { LaboratorioAdvancedConfig } from './laboratorio-advanced-config';
 import { createEmptyLaboratorioReferencia, LaboratorioReferencia } from './laboratorio-referencia.model';
 import { LABORATORIO_REFERENCIA_REPOSITORY } from './laboratorios-referencia.tokens';
 
 @Component({
   selector: 'app-laboratorios-referencia-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions, LaboratorioAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './laboratorios-referencia-page.html',
   styleUrl: './laboratorios-referencia-page.css',
@@ -38,20 +39,9 @@ export class LaboratoriosReferenciaPage {
   protected readonly search = signal('');
 
   protected readonly provincias = signal<readonly CatalogItem[]>([]);
-  protected readonly tecnicas = signal<readonly CatalogItem[]>([]);
 
-  /** Técnicas aún no asociadas a este laboratorio: las que ofrece el buscador de "Añadir técnica". */
-  protected readonly tecnicasDisponibles = computed<CatalogItem[]>(() => {
-    const asociadas = new Set(this.draft().tecnicasAsociadasIds);
-    return this.tecnicas().filter((tecnica) => !asociadas.has(tecnica.id));
-  });
-
-  protected readonly tecnicasAsociadas = computed<CatalogItem[]>(() => {
-    const porId = new Map(this.tecnicas().map((tecnica) => [tecnica.id, tecnica]));
-    return this.draft()
-      .tecnicasAsociadasIds.map((id) => porId.get(id))
-      .filter((tecnica): tecnica is CatalogItem => !!tecnica);
-  });
+  /** Nº de técnicas asociadas por laboratorio (vía `tecnica.laboratorioExternoId`), para la columna del listado. */
+  protected readonly numTecnicasPorLaboratorio = signal<ReadonlyMap<string, number>>(new Map());
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -71,33 +61,18 @@ export class LaboratoriosReferenciaPage {
   }
 
   protected openEdit(laboratorio: LaboratorioReferencia): void {
-    this.crud.openEdit({ ...laboratorio, tecnicasAsociadasIds: [...laboratorio.tecnicasAsociadasIds] });
+    this.crud.openEdit(laboratorio);
   }
 
   protected closeDrawer(): void {
     this.crud.closeDrawer();
+    // Las técnicas asociadas se guardan al instante desde el Avanzado: al cerrar, refresca el
+    // recuento del listado por si ha cambiado.
+    void this.loadNumTecnicasPorLaboratorio();
   }
 
   protected generateCodigo(): Promise<void> {
     return this.crud.regenerate();
-  }
-
-  protected addTecnica(id: string | null): void {
-    if (!id) {
-      return;
-    }
-    this.draft.update((current) =>
-      current.tecnicasAsociadasIds.includes(id)
-        ? current
-        : { ...current, tecnicasAsociadasIds: [...current.tecnicasAsociadasIds, id] },
-    );
-  }
-
-  protected removeTecnica(id: string): void {
-    this.draft.update((current) => ({
-      ...current,
-      tecnicasAsociadasIds: current.tecnicasAsociadasIds.filter((tecnicaId) => tecnicaId !== id),
-    }));
   }
 
   protected save(): Promise<void> {
@@ -121,16 +96,19 @@ export class LaboratoriosReferenciaPage {
   }
 
   private async loadCatalogs(): Promise<void> {
-    const [provincias, tecnicas] = await Promise.all([
-      this.catalogService.load('provincias'),
-      this.tecnicaRepository.list(),
-    ]);
-    this.provincias.set(provincias);
-    this.tecnicas.set(
-      tecnicas.map((tecnica) => ({
-        id: tecnica.id,
-        nombre: tecnica.codigo ? `${tecnica.codigo} — ${tecnica.nombre}` : tecnica.nombre,
-      })),
-    );
+    this.provincias.set(await this.catalogService.load('provincias'));
+    await this.loadNumTecnicasPorLaboratorio();
+  }
+
+  private async loadNumTecnicasPorLaboratorio(): Promise<void> {
+    const tecnicas = await this.tecnicaRepository.list();
+    const map = new Map<string, number>();
+    for (const tecnica of tecnicas) {
+      if (!tecnica.laboratorioExternoId) {
+        continue;
+      }
+      map.set(tecnica.laboratorioExternoId, (map.get(tecnica.laboratorioExternoId) ?? 0) + 1);
+    }
+    this.numTecnicasPorLaboratorio.set(map);
   }
 }

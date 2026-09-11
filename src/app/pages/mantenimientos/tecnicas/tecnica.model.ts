@@ -35,6 +35,14 @@ export interface Tecnica {
 
   ordenImpresion: number | null;
   laboratorioExternoId: string | null;
+  /**
+   * "Valores" del laboratorio de referencia (Avanzado del laboratorio): equivalencia,
+   * precio y requisitos de esta técnica para el laboratorio externo asignado. Sin sentido
+   * si `laboratorioExternoId` es null.
+   */
+  laboratorioExternoCodigo: string | null;
+  laboratorioExternoPrecio: number | null;
+  laboratorioExternoIncidencias: string | null;
   nombreInforme: string;
   cabeceraEdicion: string;
   comentarioEdicion: string;
@@ -93,6 +101,9 @@ export function createEmptyTecnica(): Tecnica {
     deltaCheckDias: null,
     ordenImpresion: null,
     laboratorioExternoId: null,
+    laboratorioExternoCodigo: null,
+    laboratorioExternoPrecio: null,
+    laboratorioExternoIncidencias: null,
     nombreInforme: '',
     cabeceraEdicion: '',
     comentarioEdicion: '',
