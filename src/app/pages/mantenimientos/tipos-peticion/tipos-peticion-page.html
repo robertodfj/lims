@@ -86,6 +86,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar tipo de petición' : 'Nuevo tipo de petición'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>
@@ -136,6 +137,6 @@
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasAdvanced]="false" (cancelled)="closeDrawer()" (saved)="save()" />
   </div>
 </app-drawer>
