@@ -1,1 +1,33 @@
-[]
+[
+  {
+    "id": "peti-1001",
+    "numRegistro": 1001,
+    "fechaVisita": "2026-09-01T09:15",
+    "sociedadId": "soc-clinica-demo",
+    "procedenciaId": "proc-consulta-centro",
+    "peticionarioId": "PT-001",
+    "tipoPeticionId": "tipo-rutina",
+    "estadoFacturacionId": "pendiente",
+    "destinoId": "email",
+    "comentario": "",
+    "tecnicas": [
+      { "tecnicaId": "tec-glucosa", "precio": 4.5 },
+      { "tecnicaId": "tec-hemograma", "precio": 8 }
+    ],
+    "pacienteId": "pac-garcia-lopez"
+  },
+  {
+    "id": "peti-1002",
+    "numRegistro": 1002,
+    "fechaVisita": "2026-09-03T11:40",
+    "sociedadId": "soc-mutua-salud",
+    "procedenciaId": "proc-clinica-norte",
+    "peticionarioId": "PT-002",
+    "tipoPeticionId": "tipo-urgente",
+    "estadoFacturacionId": "facturado",
+    "destinoId": "correo",
+    "comentario": "Paciente con antecedentes cardíacos.",
+    "tecnicas": [{ "tecnicaId": "tec-colesterol", "precio": 6 }],
+    "pacienteId": "pac-martinez-ruiz"
+  }
+]

@@ -1,1 +1,6 @@
-[]
+[
+  { "id": "resalf-positivo", "codigo": "1", "texto": "Positivo" },
+  { "id": "resalf-negativo", "codigo": "2", "texto": "Negativo" },
+  { "id": "resalf-indeterminado", "codigo": "3", "texto": "Indeterminado" },
+  { "id": "resalf-noreactivo", "codigo": "4", "texto": "No reactivo" }
+]

@@ -1,1 +1,8 @@
-[]
+[
+  { "id": "sexo-mujer", "codigo": "1", "sexoEspecie": "Mujer" },
+  { "id": "sexo-hombre", "codigo": "2", "sexoEspecie": "Hombre" },
+  { "id": "sexo-macho-canino", "codigo": "3", "sexoEspecie": "Macho — Canino" },
+  { "id": "sexo-hembra-canino", "codigo": "4", "sexoEspecie": "Hembra — Canino" },
+  { "id": "sexo-macho-felino", "codigo": "5", "sexoEspecie": "Macho — Felino" },
+  { "id": "sexo-hembra-felino", "codigo": "6", "sexoEspecie": "Hembra — Felino" }
+]

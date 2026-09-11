@@ -1,1 +1,4 @@
-[]
+[
+  { "id": "soporte-gradilla-8x12", "codigo": "1", "numFilas": 8, "numColumnas": 12, "orientacion": "horizontal", "color": "#3b57d9" },
+  { "id": "soporte-rack-6x10", "codigo": "2", "numFilas": 6, "numColumnas": 10, "orientacion": "vertical", "color": "#059669" }
+]

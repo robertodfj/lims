@@ -1,1 +1,6 @@
-[]
+[
+  { "id": "grupo-bioquimica", "codigo": "1", "nombre": "Bioquímica", "orden": 1, "comentarioEdicion": "", "saltoPagina": false },
+  { "id": "grupo-hematologia", "codigo": "2", "nombre": "Hematología", "orden": 2, "comentarioEdicion": "", "saltoPagina": false },
+  { "id": "grupo-microbiologia", "codigo": "3", "nombre": "Microbiología", "orden": 3, "comentarioEdicion": "", "saltoPagina": true },
+  { "id": "grupo-inmunologia", "codigo": "4", "nombre": "Inmunología", "orden": 4, "comentarioEdicion": "", "saltoPagina": false }
+]

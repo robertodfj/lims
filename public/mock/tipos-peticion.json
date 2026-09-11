@@ -1,1 +1,5 @@
-[]
+[
+  { "id": "tipo-rutina", "codigo": "1", "nombre": "Rutina", "color": "#3b57d9" },
+  { "id": "tipo-urgente", "codigo": "2", "nombre": "Urgente", "color": "#dc2626" },
+  { "id": "tipo-preferente", "codigo": "3", "nombre": "Preferente", "color": "#d97706" }
+]

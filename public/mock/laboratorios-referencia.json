@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "labref-norte",
+    "codigo": "1",
+    "nombre": "Laboratorio de Referencia Norte",
+    "domicilio": "Calle Mayor 12",
+    "poblacion": "Bilbao",
+    "provinciaId": "es-viz",
+    "cp": "48001",
+    "numCliente": "CLI-4021",
+    "personaContacto": "Iker Aranguren",
+    "telefono": "944112233",
+    "fax": "944112234",
+    "observaciones": "",
+    "tecnicasAsociadasIds": ["tec-pcr-covid"]
+  },
+  {
+    "id": "labref-sur",
+    "codigo": "2",
+    "nombre": "Laboratorio de Referencia Sur",
+    "domicilio": "Av. de la Constitución 45",
+    "poblacion": "Sevilla",
+    "provinciaId": "es-se",
+    "cp": "41001",
+    "numCliente": "CLI-4088",
+    "personaContacto": "Carmen Reyes",
+    "telefono": "954223344",
+    "fax": "",
+    "observaciones": "",
+    "tecnicasAsociadasIds": []
+  }
+]

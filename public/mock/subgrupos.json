@@ -1,1 +1,5 @@
-[]
+[
+  { "id": "subgrupo-perfil-hepatico", "codigo": "1", "nombre": "Perfil hepático", "orden": 1, "comentarioEdicion": "", "saltoPagina": false },
+  { "id": "subgrupo-perfil-renal", "codigo": "2", "nombre": "Perfil renal", "orden": 2, "comentarioEdicion": "", "saltoPagina": false },
+  { "id": "subgrupo-perfil-lipidico", "codigo": "3", "nombre": "Perfil lipídico", "orden": 3, "comentarioEdicion": "", "saltoPagina": false }
+]
