@@ -1,13 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { createEmptySubgrupo, Subgrupo } from './subgrupo.model';
 import { SUBGRUPO_REPOSITORY } from './subgrupos.tokens';
 
 @Component({
   selector: 'app-subgrupos-page',
-  imports: [FormsModule, Icon, Drawer],
+  imports: [FormsModule, Icon, Drawer, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './subgrupos-page.html',
   styleUrl: './subgrupos-page.css',
@@ -15,15 +18,18 @@ import { SUBGRUPO_REPOSITORY } from './subgrupos.tokens';
 export class SubgruposPage {
   private readonly repository = inject(SUBGRUPO_REPOSITORY);
 
-  protected readonly subgrupos = signal<Subgrupo[] | null>(null);
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptySubgrupo, (value) => !!value.nombre.trim(), {
+    field: 'codigo',
+    next: () => this.repository.nextCodigo(),
+  });
+  protected readonly subgrupos = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly generatingCodigo = this.crud.generating;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
-
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<Subgrupo>(createEmptySubgrupo());
-  protected readonly saving = signal(false);
-  protected readonly generatingCodigo = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -33,69 +39,42 @@ export class SubgruposPage {
   });
 
   constructor() {
-    void this.loadSubgrupos();
+    void this.crud.load();
   }
 
-  protected async openNew(): Promise<void> {
-    this.draft.set(createEmptySubgrupo());
-    this.drawerOpen.set(true);
-    await this.generateCodigo();
+  protected openNew(): void {
+    void this.crud.openNew();
   }
 
   protected openEdit(subgrupo: Subgrupo): void {
-    this.draft.set({ ...subgrupo });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(subgrupo);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
-  protected async generateCodigo(): Promise<void> {
-    this.generatingCodigo.set(true);
-    try {
-      const codigo = await this.repository.nextCodigo();
-      this.updateDraft('codigo', codigo);
-    } finally {
-      this.generatingCodigo.set(false);
-    }
+  protected generateCodigo(): Promise<void> {
+    return this.crud.regenerate();
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.nombre.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadSubgrupos();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadSubgrupos();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof Subgrupo>(key: K, value: Subgrupo[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
-  }
-
-  private async loadSubgrupos(): Promise<void> {
-    this.subgrupos.set(await this.repository.list());
+    this.crud.updateDraft(key, value);
   }
 }

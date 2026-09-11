@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { DESTINO_REPOSITORY } from '../destino-informes/destinos.tokens';
@@ -16,7 +19,7 @@ type EstadoFilter = 'todos' | 'activa' | 'no-activa';
 
 @Component({
   selector: 'app-procedencias-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './procedencias-page.html',
   styleUrl: './procedencias-page.css',
@@ -26,16 +29,19 @@ export class ProcedenciasPage {
   private readonly catalogService = inject(CatalogService);
   private readonly destinoRepository = inject(DESTINO_REPOSITORY);
 
-  protected readonly procedencias = signal<Procedencia[] | null>(null);
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyProcedencia, (value) => !!value.nombre.trim(), {
+    field: 'codigo',
+    next: () => this.repository.nextCodigo(),
+  });
+  protected readonly procedencias = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly generatingCodigo = this.crud.generating;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
   protected readonly estadoFilter = signal<EstadoFilter>('todos');
-
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<Procedencia>(createEmptyProcedencia());
-  protected readonly saving = signal(false);
-  protected readonly generatingCodigo = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
 
   protected readonly paises = signal<readonly CatalogItem[]>([]);
   protected readonly provincias = signal<readonly Provincia[]>([]);
@@ -65,33 +71,24 @@ export class ProcedenciasPage {
   });
 
   constructor() {
-    void this.loadProcedencias();
+    void this.crud.load();
     void this.loadCatalogs();
   }
 
-  protected async openNew(): Promise<void> {
-    this.draft.set(createEmptyProcedencia());
-    this.drawerOpen.set(true);
-    await this.generateCodigo();
+  protected openNew(): void {
+    void this.crud.openNew();
   }
 
-  protected async generateCodigo(): Promise<void> {
-    this.generatingCodigo.set(true);
-    try {
-      const codigo = await this.repository.nextCodigo();
-      this.updateDraft('codigo', codigo);
-    } finally {
-      this.generatingCodigo.set(false);
-    }
+  protected generateCodigo(): Promise<void> {
+    return this.crud.regenerate();
   }
 
   protected openEdit(procedencia: Procedencia): void {
-    this.draft.set({ ...procedencia });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(procedencia);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
   /** Cambiar de país invalida la provincia elegida: evita combinaciones país/provincia inconsistentes. */
@@ -99,42 +96,24 @@ export class ProcedenciasPage {
     this.draft.update((current) => ({ ...current, paisId, provinciaId: null }));
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.nombre.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadProcedencias();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadProcedencias();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof Procedencia>(key: K, value: Procedencia[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
-  }
-
-  private async loadProcedencias(): Promise<void> {
-    this.procedencias.set(await this.repository.list());
+    this.crud.updateDraft(key, value);
   }
 
   private async loadCatalogs(): Promise<void> {

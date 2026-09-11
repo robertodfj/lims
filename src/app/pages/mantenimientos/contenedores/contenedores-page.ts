@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { Contenedor, createEmptyContenedor } from './contenedor.model';
@@ -9,7 +12,7 @@ import { CONTENEDOR_REPOSITORY } from './contenedores.tokens';
 
 @Component({
   selector: 'app-contenedores-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './contenedores-page.html',
   styleUrl: './contenedores-page.css',
@@ -18,13 +21,14 @@ export class ContenedoresPage {
   private readonly repository = inject(CONTENEDOR_REPOSITORY);
   private readonly catalogService = inject(CatalogService);
 
-  protected readonly contenedores = signal<Contenedor[] | null>(null);
-  protected readonly search = signal('');
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyContenedor, (value) => !!value.nombre.trim());
+  protected readonly contenedores = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<Contenedor>(createEmptyContenedor());
-  protected readonly saving = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
+  protected readonly search = signal('');
 
   protected readonly tiposMuestra = signal<readonly CatalogItem[]>([]);
 
@@ -41,60 +45,40 @@ export class ContenedoresPage {
   });
 
   constructor() {
-    void this.loadContenedores();
+    void this.crud.load();
     void this.loadCatalogs();
   }
 
   protected openNew(): void {
-    this.draft.set(createEmptyContenedor());
-    this.drawerOpen.set(true);
+    void this.crud.openNew();
   }
 
   protected openEdit(contenedor: Contenedor): void {
-    this.draft.set({ ...contenedor });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(contenedor);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.nombre.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadContenedores();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadContenedores();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof Contenedor>(key: K, value: Contenedor[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
-  }
-
-  private async loadContenedores(): Promise<void> {
-    this.contenedores.set(await this.repository.list());
+    this.crud.updateDraft(key, value);
   }
 
   private async loadCatalogs(): Promise<void> {

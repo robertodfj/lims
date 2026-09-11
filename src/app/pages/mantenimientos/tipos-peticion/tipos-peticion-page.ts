@@ -1,13 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { createEmptyTipoPeticion, TipoPeticion } from './tipo-peticion.model';
 import { TIPO_PETICION_REPOSITORY } from './tipos-peticion.tokens';
 
 @Component({
   selector: 'app-tipos-peticion-page',
-  imports: [FormsModule, Icon, Drawer],
+  imports: [FormsModule, Icon, Drawer, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tipos-peticion-page.html',
   styleUrl: './tipos-peticion-page.css',
@@ -15,14 +18,18 @@ import { TIPO_PETICION_REPOSITORY } from './tipos-peticion.tokens';
 export class TiposPeticionPage {
   private readonly repository = inject(TIPO_PETICION_REPOSITORY);
 
-  protected readonly tipos = signal<TipoPeticion[] | null>(null);
-  protected readonly search = signal('');
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyTipoPeticion, (value) => !!value.nombre.trim(), {
+    field: 'codigo',
+    next: () => this.repository.nextCodigo(),
+  });
+  protected readonly tipos = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly generatingCodigo = this.crud.generating;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<TipoPeticion>(createEmptyTipoPeticion());
-  protected readonly saving = signal(false);
-  protected readonly generatingCodigo = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
+  protected readonly search = signal('');
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -32,69 +39,42 @@ export class TiposPeticionPage {
   });
 
   constructor() {
-    void this.loadTipos();
+    void this.crud.load();
   }
 
-  protected async openNew(): Promise<void> {
-    this.draft.set(createEmptyTipoPeticion());
-    this.drawerOpen.set(true);
-    await this.generateCodigo();
+  protected openNew(): void {
+    void this.crud.openNew();
   }
 
   protected openEdit(tipo: TipoPeticion): void {
-    this.draft.set({ ...tipo });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(tipo);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
-  protected async generateCodigo(): Promise<void> {
-    this.generatingCodigo.set(true);
-    try {
-      const codigo = await this.repository.nextCodigo();
-      this.updateDraft('codigo', codigo);
-    } finally {
-      this.generatingCodigo.set(false);
-    }
+  protected generateCodigo(): Promise<void> {
+    return this.crud.regenerate();
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.nombre.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadTipos();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadTipos();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof TipoPeticion>(key: K, value: TipoPeticion[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
-  }
-
-  private async loadTipos(): Promise<void> {
-    this.tipos.set(await this.repository.list());
+    this.crud.updateDraft(key, value);
   }
 }

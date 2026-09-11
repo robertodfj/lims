@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { RichTextEditor } from '../../../shared/rich-text-editor/rich-text-editor';
 import { Comentario, createEmptyComentario } from './comentario.model';
@@ -8,7 +11,7 @@ import { COMENTARIO_REPOSITORY } from './comentarios.tokens';
 
 @Component({
   selector: 'app-comentarios-page',
-  imports: [FormsModule, Icon, Drawer, RichTextEditor],
+  imports: [FormsModule, Icon, Drawer, RichTextEditor, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './comentarios-page.html',
   styleUrl: './comentarios-page.css',
@@ -16,15 +19,18 @@ import { COMENTARIO_REPOSITORY } from './comentarios.tokens';
 export class ComentariosPage {
   private readonly repository = inject(COMENTARIO_REPOSITORY);
 
-  protected readonly comentarios = signal<Comentario[] | null>(null);
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyComentario, (value) => !!value.nombre.trim(), {
+    field: 'codigo',
+    next: () => this.repository.nextCodigo(),
+  });
+  protected readonly comentarios = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly generatingCodigo = this.crud.generating;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
-
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<Comentario>(createEmptyComentario());
-  protected readonly saving = signal(false);
-  protected readonly generatingCodigo = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
@@ -35,66 +41,43 @@ export class ComentariosPage {
   });
 
   constructor() {
-    void this.loadComentarios();
+    void this.crud.load();
   }
 
-  protected async openNew(): Promise<void> {
-    this.draft.set(createEmptyComentario());
-    this.drawerOpen.set(true);
-    await this.generateCodigo();
+  protected openNew(): void {
+    void this.crud.openNew();
   }
 
   protected openEdit(comentario: Comentario): void {
-    this.draft.set({ ...comentario });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(comentario);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
-  protected async generateCodigo(): Promise<void> {
-    this.generatingCodigo.set(true);
-    try {
-      const codigo = await this.repository.nextCodigo();
-      this.updateDraft('codigo', codigo);
-    } finally {
-      this.generatingCodigo.set(false);
-    }
+  protected generateCodigo(): Promise<void> {
+    return this.crud.regenerate();
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.nombre.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadComentarios();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadComentarios();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof Comentario>(key: K, value: Comentario[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
+    this.crud.updateDraft(key, value);
   }
 
   /** Vista previa en texto plano del comentario con formato, para la tabla. */
@@ -104,9 +87,5 @@ export class ComentariosPage {
       .replace(/\s+/g, ' ')
       .trim();
     return text.length > 90 ? `${text.slice(0, 90)}…` : text;
-  }
-
-  private async loadComentarios(): Promise<void> {
-    this.comentarios.set(await this.repository.list());
   }
 }

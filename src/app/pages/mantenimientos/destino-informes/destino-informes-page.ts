@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
 import { Drawer } from '../../../shared/drawer/drawer';
+import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
+import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { createEmptyDestino, Destino } from './destino.model';
@@ -10,7 +13,7 @@ type EstadoFilter = 'todos' | 'activo' | 'no-activo';
 
 @Component({
   selector: 'app-destino-informes-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './destino-informes-page.html',
   styleUrl: './destino-informes-page.css',
@@ -18,16 +21,19 @@ type EstadoFilter = 'todos' | 'activo' | 'no-activo';
 export class DestinoInformesPage {
   private readonly repository = inject(DESTINO_REPOSITORY);
 
-  protected readonly destinos = signal<Destino[] | null>(null);
+  protected readonly crud = new EntityDrawerCrud(this.repository, createEmptyDestino, (value) => !!value.descripcion.trim(), {
+    field: 'codigo',
+    next: () => this.repository.nextCodigo(),
+  });
+  protected readonly destinos = this.crud.items;
+  protected readonly drawerOpen = this.crud.drawerOpen;
+  protected readonly draft = this.crud.draft;
+  protected readonly saving = this.crud.saving;
+  protected readonly generatingCodigo = this.crud.generating;
+  protected readonly confirmDeleteId = this.crud.confirmDeleteId;
 
   protected readonly search = signal('');
   protected readonly estadoFilter = signal<EstadoFilter>('todos');
-
-  protected readonly drawerOpen = signal(false);
-  protected readonly draft = signal<Destino>(createEmptyDestino());
-  protected readonly saving = signal(false);
-  protected readonly generatingCodigo = signal(false);
-  protected readonly confirmDeleteId = signal<string | null>(null);
 
   /** Un destino no puede asociarse a sí mismo. */
   protected readonly destinosAsociables = computed<CatalogItem[]>(() => {
@@ -53,69 +59,42 @@ export class DestinoInformesPage {
   });
 
   constructor() {
-    void this.loadDestinos();
+    void this.crud.load();
   }
 
-  protected async openNew(): Promise<void> {
-    this.draft.set(createEmptyDestino());
-    this.drawerOpen.set(true);
-    await this.generateCodigo();
+  protected openNew(): void {
+    void this.crud.openNew();
   }
 
   protected openEdit(destino: Destino): void {
-    this.draft.set({ ...destino });
-    this.drawerOpen.set(true);
+    this.crud.openEdit(destino);
   }
 
   protected closeDrawer(): void {
-    this.drawerOpen.set(false);
+    this.crud.closeDrawer();
   }
 
-  protected async generateCodigo(): Promise<void> {
-    this.generatingCodigo.set(true);
-    try {
-      const codigo = await this.repository.nextCodigo();
-      this.updateDraft('codigo', codigo);
-    } finally {
-      this.generatingCodigo.set(false);
-    }
+  protected generateCodigo(): Promise<void> {
+    return this.crud.regenerate();
   }
 
-  protected async save(): Promise<void> {
-    const value = this.draft();
-    if (!value.descripcion.trim()) {
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.repository.save(value);
-      this.drawerOpen.set(false);
-      await this.loadDestinos();
-    } finally {
-      this.saving.set(false);
-    }
+  protected save(): Promise<void> {
+    return this.crud.save();
   }
 
   protected requestDelete(id: string): void {
-    this.confirmDeleteId.set(id);
+    this.crud.requestDelete(id);
   }
 
   protected cancelDelete(): void {
-    this.confirmDeleteId.set(null);
+    this.crud.cancelDelete();
   }
 
-  protected async confirmDelete(id: string): Promise<void> {
-    await this.repository.delete(id);
-    this.confirmDeleteId.set(null);
-    await this.loadDestinos();
+  protected confirmDelete(id: string): Promise<void> {
+    return this.crud.confirmDelete(id);
   }
 
   protected updateDraft<K extends keyof Destino>(key: K, value: Destino[K]): void {
-    this.draft.update((current) => ({ ...current, [key]: value }));
-  }
-
-  private async loadDestinos(): Promise<void> {
-    this.destinos.set(await this.repository.list());
+    this.crud.updateDraft(key, value);
   }
 }

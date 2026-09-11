@@ -5,6 +5,7 @@
       <p class="page-header__meta">Lugar físico donde se obtiene la muestra o al que se envía el informe.</p>
     </div>
     <div class="page-header__actions">
+      <app-excel-actions />
       <button type="button" class="btn btn--primary" (click)="openNew()">
         <app-icon name="plus" [size]="14" />
         Nueva procedencia
@@ -363,9 +364,6 @@
   </form>
 
   <div drawerFooter>
-    <button type="button" class="btn btn--secondary" (click)="closeDrawer()">Cancelar</button>
-    <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="save()">
-      {{ saving() ? 'Guardando…' : 'Guardar' }}
-    </button>
+    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
   </div>
 </app-drawer>
