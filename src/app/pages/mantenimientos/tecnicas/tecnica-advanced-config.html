@@ -223,28 +223,58 @@
 
 @if (activeTab() === 'comentarios') {
   <div class="avz-panel">
-    <p class="avz-panel__desc">Comentarios vinculados a la técnica.</p>
-    <div class="avz-dual">
-      <div class="avz-dual__col">
-        <h4 class="avz-dual__title">Disponibles</h4>
-        <ul class="avz-dual__list">
-          @for (comentario of comentarios(); track comentario.id) {
-            <li class="avz-dual__item">
-              <span>{{ comentario.nombre }}</span>
-              <button type="button" class="btn btn--ghost btn--icon btn--sm" disabled aria-label="Añadir">+</button>
-            </li>
-          } @empty {
-            <li class="avz-dual__empty">No hay comentarios dados de alta todavía.</li>
-          }
-        </ul>
+    <p class="avz-panel__desc">
+      Comentarios vinculados a la técnica. También se puede asociar desde el propio comentario,
+      en Mantenimientos / Comentarios / Avanzado — es la misma relación.
+    </p>
+    @if (!tecnicaId()) {
+      <p class="avz-panel__hint">Guarda la técnica primero para poder vincularle comentarios.</p>
+    } @else {
+      <div class="avz-dual">
+        <div class="avz-dual__col">
+          <h4 class="avz-dual__title">Disponibles</h4>
+          <ul class="avz-dual__list">
+            @for (comentario of comentariosDisponibles(); track comentario.id) {
+              <li class="avz-dual__item">
+                <span>{{ comentario.codigo }} — {{ comentario.nombre }}</span>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--icon btn--sm"
+                  [disabled]="guardandoComentarioId() === comentario.id"
+                  (click)="vincularComentario(comentario.id)"
+                  aria-label="Añadir"
+                >
+                  +
+                </button>
+              </li>
+            } @empty {
+              <li class="avz-dual__empty">No hay comentarios dados de alta todavía.</li>
+            }
+          </ul>
+        </div>
+        <div class="avz-dual__col">
+          <h4 class="avz-dual__title">Vinculados a esta técnica</h4>
+          <ul class="avz-dual__list">
+            @for (comentario of comentariosVinculados(); track comentario.id) {
+              <li class="avz-dual__item">
+                <span>{{ comentario.codigo }} — {{ comentario.nombre }}</span>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--icon btn--sm"
+                  [disabled]="guardandoComentarioId() === comentario.id"
+                  (click)="desvincularComentario(comentario.id)"
+                  aria-label="Quitar"
+                >
+                  ×
+                </button>
+              </li>
+            } @empty {
+              <li class="avz-dual__empty">Ningún comentario vinculado todavía.</li>
+            }
+          </ul>
+        </div>
       </div>
-      <div class="avz-dual__col">
-        <h4 class="avz-dual__title">Vinculados a esta técnica</h4>
-        <ul class="avz-dual__list">
-          <li class="avz-dual__empty">Ningún comentario vinculado todavía.</li>
-        </ul>
-      </div>
-    </div>
+    }
   </div>
 }
 

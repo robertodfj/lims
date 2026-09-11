@@ -55,6 +55,15 @@
   color: var(--text-tertiary);
 }
 
+.avz-panel__hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 .avz-panel__add {
   align-self: flex-start;
 }

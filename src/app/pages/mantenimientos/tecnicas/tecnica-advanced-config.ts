@@ -83,6 +83,25 @@ export class TecnicaAdvancedConfig {
     return this.tecnicas().filter((tecnica) => tecnica.id !== propiaId && !incluidas.has(tecnica.id));
   });
 
+  /**
+   * Comentarios vinculados a esta técnica. Igual que la relación con Laboratorio de referencia,
+   * el campo de verdad (`tecnicasVinculadasIds`) vive en el propio Comentario — es la misma
+   * relación que se edita en Mantenimientos / Comentarios / Avanzado — así que aquí se escribe
+   * directamente en el comentario y se guarda al instante, sin depender del "Guardar" de la
+   * técnica.
+   */
+  protected readonly comentariosVinculados = computed(() => {
+    const tecnicaId = this.tecnicaId();
+    return tecnicaId ? this.comentarios().filter((comentario) => (comentario.tecnicasVinculadasIds ?? []).includes(tecnicaId)) : [];
+  });
+
+  protected readonly comentariosDisponibles = computed(() => {
+    const tecnicaId = this.tecnicaId();
+    return this.comentarios().filter((comentario) => !(comentario.tecnicasVinculadasIds ?? []).includes(tecnicaId ?? ''));
+  });
+
+  protected readonly guardandoComentarioId = signal<string | null>(null);
+
   constructor() {
     void this.loadListas();
   }
@@ -101,6 +120,41 @@ export class TecnicaAdvancedConfig {
 
   protected quitarAgrupada(tecnicaId: string): void {
     this.tecnicasAgrupadasIdsChange.emit(this.idsNormalizados().filter((id) => id !== tecnicaId));
+  }
+
+  protected async vincularComentario(comentarioId: string): Promise<void> {
+    const tecnicaId = this.tecnicaId();
+    const comentario = this.comentarios().find((item) => item.id === comentarioId);
+    if (!tecnicaId || !comentario) {
+      return;
+    }
+    const actuales = comentario.tecnicasVinculadasIds ?? [];
+    if (actuales.includes(tecnicaId)) {
+      return;
+    }
+    await this.persistirComentario({ ...comentario, tecnicasVinculadasIds: [...actuales, tecnicaId] });
+  }
+
+  protected async desvincularComentario(comentarioId: string): Promise<void> {
+    const tecnicaId = this.tecnicaId();
+    const comentario = this.comentarios().find((item) => item.id === comentarioId);
+    if (!tecnicaId || !comentario) {
+      return;
+    }
+    await this.persistirComentario({
+      ...comentario,
+      tecnicasVinculadasIds: (comentario.tecnicasVinculadasIds ?? []).filter((id) => id !== tecnicaId),
+    });
+  }
+
+  private async persistirComentario(comentario: Comentario): Promise<void> {
+    this.guardandoComentarioId.set(comentario.id);
+    try {
+      const guardado = await this.comentarioRepository.save(comentario);
+      this.comentarios.update((current) => current.map((item) => (item.id === guardado.id ? guardado : item)));
+    } finally {
+      this.guardandoComentarioId.set(null);
+    }
   }
 
   private async loadListas(): Promise<void> {

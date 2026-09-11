@@ -11,17 +11,20 @@ una pantalla, no solo su tipo de dato.
 > "Configuración avanzada", con 9 pestañas (Rangos de referencia, Texto
 > referencia extendida, Decimales, Interpretación de resultado, Comentarios,
 > Agrupaciones, Resultados alfabéticos, Fórmula y Artículos); por ahora son
-> solo visuales, salvo dos excepciones funcionales: la pestaña **Agrupaciones**
+> solo visuales, salvo tres excepciones funcionales: la pestaña **Agrupaciones**
 > (solo visible si Tipo de Resultado es "Agrupación de pruebas") sí guarda de
 > verdad qué técnicas forman parte de la agrupación, y al añadir la técnica
 > padre a una petición se añaden automáticamente también todas sus técnicas
-> asociadas; y el campo Incluir en Sección no está implementado porque depende
-> del Mantenimiento de Secciones, que se retiró (ver
+> asociadas; la pestaña **Comentarios** sí guarda de verdad qué comentarios
+> (Mantenimientos / Comentarios) están vinculados a la técnica — es la misma
+> relación que se edita desde el propio comentario, en su Avanzado; y el campo
+> Incluir en Sección no está implementado porque depende del Mantenimiento de
+> Secciones, que se retiró (ver
 > [Pantallas retiradas temporalmente](#pantallas-retiradas-temporalmente)). El
 > resto de pestañas (Rangos de referencia, Texto referencia extendida,
-> Decimales, Interpretación de resultado, Comentarios, Resultados alfabéticos,
-> Fórmula, Artículos) y el editor de fórmulas de las técnicas de tipo Calculado
-> quedan pendientes de implementar.
+> Decimales, Interpretación de resultado, Resultados alfabéticos, Fórmula,
+> Artículos) y el editor de fórmulas de las técnicas de tipo Calculado quedan
+> pendientes de implementar.
 >
 > El botón "Avanzado" también existe en **Sociedades** (config. de
 > facturación) y **Destino de informes** (correo/exportación/modelo de
