@@ -3,7 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { EntityDrawerPosition } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { CONTENEDOR_REPOSITORY } from '../contenedores/contenedores.tokens';
 import { GRUPO_REPOSITORY } from '../grupos-tecnicas/grupos-tecnicas.tokens';
 import { LABORATORIO_REFERENCIA_REPOSITORY } from '../laboratorios-referencia/laboratorios-referencia.tokens';
@@ -21,7 +23,7 @@ import { TECNICA_REPOSITORY } from './tecnicas.tokens';
  */
 @Component({
   selector: 'app-tecnica-edit-drawer',
-  imports: [FormsModule, Drawer, SearchableSelect, DrawerFormFooter, TecnicaAdvancedConfig],
+  imports: [FormsModule, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, TecnicaAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tecnica-edit-drawer.html',
   styleUrl: './tecnica-edit-drawer.css',
@@ -38,8 +40,12 @@ export class TecnicaEditDrawer {
   readonly open = input(false);
   /** Técnica a editar; null = alta de una técnica nueva. */
   readonly tecnica = input<Tecnica | null>(null);
+  /** Posición dentro de la lista de técnicas del que la contiene, para el paso de página del drawer. */
+  readonly stepPosition = input<EntityDrawerPosition | null>(null);
   readonly closed = output<void>();
   readonly saved = output<Tecnica>();
+  readonly previous = output<void>();
+  readonly next = output<void>();
 
   protected readonly draft = signal<Tecnica>(createEmptyTecnica());
   protected readonly saving = signal(false);

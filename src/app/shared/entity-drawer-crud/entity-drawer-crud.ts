@@ -1,4 +1,10 @@
-import { signal, WritableSignal } from '@angular/core';
+import { computed, signal, WritableSignal } from '@angular/core';
+
+/** Posición (1-based) del registro abierto en el drawer dentro de la lista, y el total. */
+export interface EntityDrawerPosition {
+  readonly index: number;
+  readonly total: number;
+}
 
 export interface EntityDrawerRepository<T> {
   list(): Promise<T[]>;
@@ -53,6 +59,41 @@ export class EntityDrawerCrud<T extends { readonly id: string }> {
 
   closeDrawer(): void {
     this.drawerOpen.set(false);
+  }
+
+  /**
+   * Posición del registro que se está editando dentro de `items` (para el paso de página del
+   * drawer). `null` mientras se está dando de alta uno nuevo (no tiene id todavía) o si por lo
+   * que sea ya no está en la lista.
+   */
+  readonly position = computed<EntityDrawerPosition | null>(() => {
+    const items = this.items();
+    const id = this.draft().id;
+    if (!items || !id) {
+      return null;
+    }
+    const index = items.findIndex((item) => item.id === id);
+    return index === -1 ? null : { index: index + 1, total: items.length };
+  });
+
+  /** Abre en el drawer el registro anterior de `items`, si lo hay. */
+  openPrevious(): void {
+    const items = this.items();
+    const pos = this.position();
+    if (!items || !pos || pos.index <= 1) {
+      return;
+    }
+    this.openEdit(items[pos.index - 2]);
+  }
+
+  /** Abre en el drawer el siguiente registro de `items`, si lo hay. */
+  openNext(): void {
+    const items = this.items();
+    const pos = this.position();
+    if (!items || !pos || pos.index >= pos.total) {
+      return;
+    }
+    this.openEdit(items[pos.index]);
   }
 
   updateDraft<K extends keyof T>(key: K, value: T[K]): void {

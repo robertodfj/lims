@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
+import { EntityDrawerPosition } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem } from '../../../shared/searchable-select/searchable-select';
 import { GRUPO_REPOSITORY } from '../grupos-tecnicas/grupos-tecnicas.tokens';
@@ -70,6 +71,35 @@ export class TecnicasPage {
 
   protected closeDrawer(): void {
     this.drawerOpen.set(false);
+  }
+
+  /** Posición de la técnica abierta en el drawer dentro de `tecnicas`, para el paso de página. */
+  protected readonly stepPosition = computed<EntityDrawerPosition | null>(() => {
+    const tecnicas = this.tecnicas();
+    const id = this.editingTecnica()?.id;
+    if (!tecnicas || !id) {
+      return null;
+    }
+    const index = tecnicas.findIndex((tecnica) => tecnica.id === id);
+    return index === -1 ? null : { index: index + 1, total: tecnicas.length };
+  });
+
+  protected openPrevious(): void {
+    const tecnicas = this.tecnicas();
+    const pos = this.stepPosition();
+    if (!tecnicas || !pos || pos.index <= 1) {
+      return;
+    }
+    this.openEdit(tecnicas[pos.index - 2]);
+  }
+
+  protected openNext(): void {
+    const tecnicas = this.tecnicas();
+    const pos = this.stepPosition();
+    if (!tecnicas || !pos || pos.index >= pos.total) {
+      return;
+    }
+    this.openEdit(tecnicas[pos.index]);
   }
 
   protected async onTecnicaGuardada(): Promise<void> {

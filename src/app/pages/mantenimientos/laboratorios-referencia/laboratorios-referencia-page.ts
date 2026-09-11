@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
@@ -13,7 +14,7 @@ import { LABORATORIO_REFERENCIA_REPOSITORY } from './laboratorios-referencia.tok
 
 @Component({
   selector: 'app-laboratorios-referencia-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './laboratorios-referencia-page.html',
   styleUrl: './laboratorios-referencia-page.css',

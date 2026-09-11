@@ -97,6 +97,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar subgrupo' : 'Nuevo subgrupo'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>

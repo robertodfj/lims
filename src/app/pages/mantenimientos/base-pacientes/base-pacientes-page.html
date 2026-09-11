@@ -100,6 +100,7 @@
   [title]="draft().id ? 'Editar historia clínica' : 'Nueva historia clínica'"
   (closed)="closeDrawer()"
 >
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="paciente-form" (ngSubmit)="save()">
     <section class="paciente-form__section">
       <h3 class="section-title">Datos personales</h3>

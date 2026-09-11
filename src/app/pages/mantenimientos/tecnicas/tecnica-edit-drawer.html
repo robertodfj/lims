@@ -1,4 +1,5 @@
 <app-drawer [open]="open()" size="xl" [title]="tecnica() ? 'Editar técnica' : 'Nueva técnica'" (closed)="requestClose()">
+  <app-drawer-step-nav drawerStepNav [position]="stepPosition()" (previous)="previous.emit()" (next)="next.emit()" />
   <form class="tecnica-form" (ngSubmit)="save()">
     <section class="tecnica-form__section">
       <h3 class="section-title">Identificación</h3>

@@ -101,6 +101,7 @@
   [title]="draft().id ? 'Editar laboratorio de referencia' : 'Nuevo laboratorio de referencia'"
   (closed)="closeDrawer()"
 >
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="lab-form" (ngSubmit)="save()">
     <section class="lab-form__section">
       <div class="field">

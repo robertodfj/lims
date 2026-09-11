@@ -52,9 +52,19 @@
   border-bottom: 1px solid var(--border);
 }
 
+.drawer__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .drawer__title {
   font-size: 14.5px;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .drawer__body {

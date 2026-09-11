@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
@@ -14,7 +15,7 @@ import { PACIENTE_REPOSITORY } from './base-pacientes.tokens';
 
 @Component({
   selector: 'app-base-pacientes-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './base-pacientes-page.html',
   styleUrl: './base-pacientes-page.css',

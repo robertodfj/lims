@@ -8,7 +8,10 @@
   [attr.aria-hidden]="!open()"
 >
   <header class="drawer__header">
-    <h2 class="drawer__title">{{ title() }}</h2>
+    <div class="drawer__header-left">
+      <ng-content select="[drawerStepNav]" />
+      <h2 class="drawer__title">{{ title() }}</h2>
+    </div>
     <button type="button" class="btn btn--ghost btn--icon" (click)="requestClose()" aria-label="Cerrar">
       <app-icon name="x" [size]="16" />
     </button>

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
@@ -10,7 +11,7 @@ import { RESULTADO_ALFABETICO_REPOSITORY } from './resultados-alfabeticos.tokens
 
 @Component({
   selector: 'app-resultados-alfabeticos-page',
-  imports: [FormsModule, Icon, Drawer, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, DrawerFormFooter, DrawerStepNav, ExcelActions],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './resultados-alfabeticos-page.html',
   styleUrl: './resultados-alfabeticos-page.css',
