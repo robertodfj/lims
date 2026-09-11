@@ -6,12 +6,22 @@ una pantalla, no solo su tipo de dato.
 
 > **Nota de estado:** esta documentación incluye el comportamiento completo del
 > sistema original. La implementación actual (frontend, mock) cubre un
-> subconjunto de los campos de cada entidad. En **Técnicas** en concreto faltan
-> bastantes campos documentados aquí (unidades, factor de conversión, valores
-> de referencia, alarmas, pánico, delta check, nº de líneas, incluir evolución,
-> imprimir QR, incluir en sección, coste, código auxiliar) — están descritos
-> igualmente porque son parte de la lógica de negocio real, pendiente de
-> añadir a la pantalla cuando se decida ampliarla.
+> subconjunto de los campos de cada entidad. **Técnicas** ya tiene implementados
+> todos los campos documentados aquí. El botón "Avanzado" abre la
+> "Configuración avanzada", con 9 pestañas (Rangos de referencia, Texto
+> referencia extendida, Decimales, Interpretación de resultado, Comentarios,
+> Agrupaciones, Resultados alfabéticos, Fórmula y Artículos); por ahora son
+> solo visuales, salvo dos excepciones funcionales: la pestaña **Agrupaciones**
+> (solo visible si Tipo de Resultado es "Agrupación de pruebas") sí guarda de
+> verdad qué técnicas forman parte de la agrupación, y al añadir la técnica
+> padre a una petición se añaden automáticamente también todas sus técnicas
+> asociadas; y el campo Incluir en Sección no está implementado porque depende
+> del Mantenimiento de Secciones, que se retiró (ver
+> [Pantallas retiradas temporalmente](#pantallas-retiradas-temporalmente)). El
+> resto de pestañas (Rangos de referencia, Texto referencia extendida,
+> Decimales, Interpretación de resultado, Comentarios, Resultados alfabéticos,
+> Fórmula, Artículos) y el editor de fórmulas de las técnicas de tipo Calculado
+> quedan pendientes de implementar.
 
 ---
 
@@ -117,9 +127,10 @@ cómo se agrupa y factura.
   por ejemplo, para pruebas COVID.
 - **Contenedor**: tipo de recipiente necesario para la prueba. Se define
   antes en Mantenimiento de Contenedores.
-- **Incluir en Sección**: para los módulos de gestión de muestras y seroteca,
-  y para asignar permisos por sección a los usuarios. Se define antes en
-  Mantenimiento de Secciones.
+- **Incluir en Sección** *(no implementado)*: para los módulos de gestión de
+  muestras y seroteca, y para asignar permisos por sección a los usuarios. Se
+  define antes en Mantenimiento de Secciones — pantalla retirada por ahora,
+  así que este campo queda pendiente de retomar junto con ella.
 - **Tiempo de Respuesta**: tiempo estimado para obtener el resultado. Un
   número seguido de `DIA`, `DIAS`, `DIARIO`, `SEMANA`, `SEMANAS` o `SEMANAL`.
 - **Sexo / Especie**: vincula la técnica a un sexo o especie concretos. Si la
