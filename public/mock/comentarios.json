@@ -3,18 +3,21 @@
     "id": "com-hemolisis",
     "codigo": "1",
     "nombre": "Muestra hemolizada",
-    "comentario": "<div>Muestra <b>hemolizada</b>: los resultados marcados pueden verse alterados.</div>"
+    "comentario": "<div>Muestra <b>hemolizada</b>: los resultados marcados pueden verse alterados.</div>",
+    "tecnicasVinculadasIds": ["tec-glucosa", "tec-hemograma", "tec-colesterol", "tec-creatinina"]
   },
   {
     "id": "com-lipemia",
     "codigo": "2",
     "nombre": "Muestra lipémica",
-    "comentario": "<div>Muestra <b>lipémica</b>: puede afectar a la determinación de algunos parámetros.</div>"
+    "comentario": "<div>Muestra <b>lipémica</b>: puede afectar a la determinación de algunos parámetros.</div>",
+    "tecnicasVinculadasIds": ["tec-colesterol", "tec-glucosa"]
   },
   {
     "id": "com-repetir",
     "codigo": "3",
     "nombre": "Repetir extracción",
-    "comentario": "<div style=\"text-align: center;\">Se recomienda <b>repetir la extracción</b> para confirmar el resultado.</div>"
+    "comentario": "<div style=\"text-align: center;\">Se recomienda <b>repetir la extracción</b> para confirmar el resultado.</div>",
+    "tecnicasVinculadasIds": []
   }
 ]

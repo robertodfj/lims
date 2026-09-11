@@ -136,6 +136,11 @@
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-comentario-advanced-config
+        [tecnicasVinculadasIds]="draft().tecnicasVinculadasIds"
+        (tecnicasVinculadasIdsChange)="updateDraft('tecnicasVinculadasIds', $any($event))"
+      />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>

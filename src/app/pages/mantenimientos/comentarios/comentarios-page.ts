@@ -7,12 +7,13 @@ import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-draw
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { RichTextEditor } from '../../../shared/rich-text-editor/rich-text-editor';
+import { ComentarioAdvancedConfig } from './comentario-advanced-config';
 import { Comentario, createEmptyComentario } from './comentario.model';
 import { COMENTARIO_REPOSITORY } from './comentarios.tokens';
 
 @Component({
   selector: 'app-comentarios-page',
-  imports: [FormsModule, Icon, Drawer, RichTextEditor, DrawerFormFooter, DrawerStepNav, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, RichTextEditor, DrawerFormFooter, DrawerStepNav, ExcelActions, ComentarioAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './comentarios-page.html',
   styleUrl: './comentarios-page.css',

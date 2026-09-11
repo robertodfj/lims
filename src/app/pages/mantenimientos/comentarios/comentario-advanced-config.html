@@ -1,0 +1,40 @@
+<p class="avz__intro">
+  Técnicas a las que se puede vincular este comentario. Al introducir un comentario en un
+  resultado de una de estas técnicas, este aparecerá entre los sugeridos (pestaña "Asociados");
+  el resto de comentarios siguen accesibles desde la pestaña "Todos".
+</p>
+
+<div class="avz-dual">
+  <div class="avz-dual__col">
+    <h4 class="avz-dual__title">Disponibles</h4>
+    <ul class="avz-dual__list">
+      @for (tecnica of tecnicasDisponibles(); track tecnica.id) {
+        <li class="avz-dual__item">
+          <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+          <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="agregar(tecnica.id)" aria-label="Agregar">
+            +
+          </button>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">No hay más técnicas disponibles.</li>
+      }
+    </ul>
+  </div>
+  <div class="avz-dual__col">
+    <h4 class="avz-dual__title">Técnicas vinculadas</h4>
+    <ul class="avz-dual__list">
+      @for (tecnica of tecnicasVinculadas(); track tecnica.id) {
+        <li class="avz-dual__item">
+          <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+          <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="quitar(tecnica.id)" aria-label="Quitar">
+            ×
+          </button>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">
+          Ninguna vinculada: este comentario es genérico y solo aparecerá en la pestaña "Todos".
+        </li>
+      }
+    </ul>
+  </div>
+</div>
