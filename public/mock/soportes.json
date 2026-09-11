@@ -1,4 +1,22 @@
 [
-  { "id": "soporte-gradilla-8x12", "codigo": "1", "numFilas": 8, "numColumnas": 12, "orientacion": "horizontal", "color": "#3b57d9" },
-  { "id": "soporte-rack-6x10", "codigo": "2", "numFilas": 6, "numColumnas": 10, "orientacion": "vertical", "color": "#059669" }
+  {
+    "id": "soporte-gradilla-8x12",
+    "codigo": "1",
+    "descripcion": "Gradilla 8x12 sangre",
+    "numFilas": 8,
+    "numColumnas": 12,
+    "orientacion": "horizontal",
+    "color": "#3b57d9",
+    "contenedoresAsociadosIds": ["tubo-edta", "tubo-seco"]
+  },
+  {
+    "id": "soporte-rack-6x10",
+    "codigo": "2",
+    "descripcion": "Rack 6x10 orina",
+    "numFilas": 6,
+    "numColumnas": 10,
+    "orientacion": "vertical",
+    "color": "#059669",
+    "contenedoresAsociadosIds": []
+  }
 ]

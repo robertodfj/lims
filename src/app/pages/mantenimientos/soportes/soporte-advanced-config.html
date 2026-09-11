@@ -1,0 +1,38 @@
+<p class="avz__intro">
+  Contenedores que se podrán utilizar en este soporte. Por defecto un soporte no tiene ningún
+  contenedor asociado y admite todos; en cuanto se asocie alguno, el soporte solo admitirá los
+  de la columna "Contenedores asociados".
+</p>
+
+<div class="avz-dual">
+  <div class="avz-dual__col">
+    <h4 class="avz-dual__title">Disponibles</h4>
+    <ul class="avz-dual__list">
+      @for (contenedor of contenedoresDisponibles(); track contenedor.id) {
+        <li class="avz-dual__item">
+          <span>{{ contenedor.nombre }}</span>
+          <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="agregar(contenedor.id)" aria-label="Agregar">
+            +
+          </button>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">No hay más contenedores disponibles.</li>
+      }
+    </ul>
+  </div>
+  <div class="avz-dual__col">
+    <h4 class="avz-dual__title">Contenedores asociados</h4>
+    <ul class="avz-dual__list">
+      @for (contenedor of contenedoresIncluidos(); track contenedor.id) {
+        <li class="avz-dual__item">
+          <span>{{ contenedor.nombre }}</span>
+          <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="quitar(contenedor.id)" aria-label="Quitar">
+            ×
+          </button>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">Ninguno asociado todavía: se admiten todos los contenedores.</li>
+      }
+    </ul>
+  </div>
+</div>

@@ -19,7 +19,13 @@
     <div class="toolbar">
       <label class="search-input toolbar__search">
         <app-icon name="search" [size]="15" />
-        <input class="input" type="text" placeholder="Buscar por código…" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por código o descripción…"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
       </label>
 
       <span class="toolbar__spacer"></span>
@@ -31,6 +37,7 @@
         <thead>
           <tr>
             <th scope="col">Código</th>
+            <th scope="col">Descripción</th>
             <th scope="col" class="is-num">Filas</th>
             <th scope="col" class="is-num">Columnas</th>
             <th scope="col">Orientación</th>
@@ -42,6 +49,7 @@
           @for (soporte of filtered(); track soporte.id) {
             <tr>
               <td class="cell-primary">{{ soporte.codigo }}</td>
+              <td class="cell-muted">{{ soporte.descripcion || '—' }}</td>
               <td class="is-num cell-muted">{{ soporte.numFilas }}</td>
               <td class="is-num cell-muted">{{ soporte.numColumnas }}</td>
               <td class="cell-muted">{{ soporte.orientacion === 'vertical' ? 'Vertical' : 'Horizontal' }}</td>
@@ -69,7 +77,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6">
+              <td colspan="7">
                 <div class="empty-state empty-state--inline">
                   <p class="empty-state__title">Sin resultados</p>
                   <p class="empty-state__desc">Ningún soporte coincide con la búsqueda.</p>
@@ -84,6 +92,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar soporte' : 'Nuevo soporte'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>
@@ -101,6 +110,18 @@
           Auto
         </button>
       </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-descripcion">Descripción</label>
+      <input
+        id="f-descripcion"
+        class="input"
+        type="text"
+        [ngModel]="draft().descripcion"
+        (ngModelChange)="updateDraft('descripcion', $event)"
+        name="descripcion"
+      />
     </div>
 
     <div class="drawer-form__row">
@@ -178,6 +199,11 @@
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-soporte-advanced-config
+        [contenedoresAsociadosIds]="draft().contenedoresAsociadosIds"
+        (contenedoresAsociadosIdsChange)="updateDraft('contenedoresAsociadosIds', $any($event))"
+      />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>

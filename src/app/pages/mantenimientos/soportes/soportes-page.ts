@@ -1,17 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
+import { SoporteAdvancedConfig } from './soporte-advanced-config';
 import { createEmptySoporte, Soporte, SoporteOrientacion } from './soporte.model';
 import { SoporteGridPreview } from './soporte-grid-preview';
 import { SOPORTE_REPOSITORY } from './soportes.tokens';
 
 @Component({
   selector: 'app-soportes-page',
-  imports: [FormsModule, Icon, Drawer, SoporteGridPreview, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SoporteGridPreview, DrawerFormFooter, DrawerStepNav, ExcelActions, SoporteAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './soportes-page.html',
   styleUrl: './soportes-page.css',
@@ -36,7 +38,9 @@ export class SoportesPage {
 
   protected readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
-    return (this.soportes() ?? []).filter((soporte) => !term || soporte.codigo.toLowerCase().includes(term));
+    return (this.soportes() ?? []).filter(
+      (soporte) => !term || soporte.codigo.toLowerCase().includes(term) || soporte.descripcion.toLowerCase().includes(term),
+    );
   });
 
   constructor() {
