@@ -3,15 +3,18 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Icon } from '../../../shared/icon/icon';
-import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { Modal } from '../../../shared/modal/modal';
+import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
 import { createEmptyPaciente, Paciente } from '../../mantenimientos/base-pacientes/paciente.model';
 import { PACIENTE_REPOSITORY } from '../../mantenimientos/base-pacientes/base-pacientes.tokens';
 import { DESTINO_REPOSITORY } from '../../mantenimientos/destino-informes/destinos.tokens';
+import { GRUPO_REPOSITORY } from '../../mantenimientos/grupos-tecnicas/grupos-tecnicas.tokens';
 import { PETICIONARIO_REPOSITORY } from '../../mantenimientos/peticionarios/peticionarios.tokens';
 import { PROCEDENCIA_REPOSITORY } from '../../mantenimientos/procedencias/procedencias.tokens';
 import { SEXO_ESPECIE_REPOSITORY } from '../../mantenimientos/sexo-especie/sexo-especie.tokens';
 import { SOCIEDAD_REPOSITORY } from '../../mantenimientos/sociedades/sociedades.tokens';
+import { TecnicaEditDrawer } from '../../mantenimientos/tecnicas/tecnica-edit-drawer';
+import { Tecnica } from '../../mantenimientos/tecnicas/tecnica.model';
 import { TECNICA_REPOSITORY } from '../../mantenimientos/tecnicas/tecnicas.tokens';
 import { TIPO_PETICION_REPOSITORY } from '../../mantenimientos/tipos-peticion/tipos-peticion.tokens';
 import { createEmptyPeticion, Peticion, PeticionTecnica } from './peticion.model';
@@ -38,7 +41,7 @@ function toDateOnlyValue(date: Date): string {
 
 @Component({
   selector: 'app-peticiones-resultados-page',
-  imports: [FormsModule, DecimalPipe, Icon, SearchableSelect, Modal],
+  imports: [FormsModule, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './peticiones-resultados-page.html',
   styleUrl: './peticiones-resultados-page.css',
@@ -52,6 +55,7 @@ export class PeticionesResultadosPage {
   private readonly tipoPeticionRepository = inject(TIPO_PETICION_REPOSITORY);
   private readonly destinoRepository = inject(DESTINO_REPOSITORY);
   private readonly tecnicaRepository = inject(TECNICA_REPOSITORY);
+  private readonly grupoRepository = inject(GRUPO_REPOSITORY);
   private readonly pacienteRepository = inject(PACIENTE_REPOSITORY);
   private readonly sexoEspecieRepository = inject(SEXO_ESPECIE_REPOSITORY);
 
@@ -99,6 +103,9 @@ export class PeticionesResultadosPage {
   protected readonly estadosFacturacion = signal<readonly CatalogItem[]>([]);
   protected readonly destinos = signal<readonly CatalogItem[]>([]);
   protected readonly tecnicas = signal<readonly CatalogItem[]>([]);
+  /** Registros completos de técnicas (no solo id/nombre), para mostrar código y tiempo de respuesta en la solicitud. */
+  protected readonly tecnicasCompletas = signal<readonly Tecnica[]>([]);
+  protected readonly grupos = signal<readonly CatalogItem[]>([]);
   protected readonly provincias = signal<readonly CatalogItem[]>([]);
   protected readonly sexosEspecies = signal<readonly CatalogItem[]>([]);
 
@@ -170,17 +177,37 @@ export class PeticionesResultadosPage {
     return this.tecnicas().filter((tecnica) => !añadidas.has(tecnica.id));
   });
 
+  private readonly gruposPorId = computed(() => new Map(this.grupos().map((grupo) => [grupo.id, grupo.nombre])));
+
   protected readonly lineasSolicitud = computed(() => {
-    const porId = new Map(this.tecnicas().map((tecnica) => [tecnica.id, tecnica]));
-    return this.draft().tecnicas.map((linea) => ({
-      linea,
-      nombre: porId.get(linea.tecnicaId)?.nombre ?? linea.tecnicaId,
-    }));
+    const porId = new Map(this.tecnicasCompletas().map((tecnica) => [tecnica.id, tecnica]));
+    return this.draft().tecnicas.map((linea) => {
+      const tecnica = porId.get(linea.tecnicaId);
+      return {
+        linea,
+        codigo: tecnica?.codigo ?? '—',
+        nombre: tecnica?.nombre ?? linea.tecnicaId,
+        grupo: tecnica?.grupoId ? (this.gruposPorId().get(tecnica.grupoId) ?? '—') : '—',
+        tiempoRespuesta: tecnica?.tiempoRespuesta || '—',
+      };
+    });
   });
 
   protected readonly totalPrecio = computed(() =>
     this.draft().tecnicas.reduce((total, linea) => total + (linea.precio ?? 0), 0),
   );
+
+  /** Id de la técnica cuya línea se está editando; null = drawer cerrado. */
+  private readonly lineaEnEdicionId = signal<string | null>(null);
+
+  /** Mismo formulario que Mantenimientos / Técnicas: se le pasa el registro completo de la técnica. */
+  protected readonly tecnicaEnEdicion = computed<Tecnica | null>(() => {
+    const id = this.lineaEnEdicionId();
+    if (!id) {
+      return null;
+    }
+    return this.tecnicasCompletas().find((tecnica) => tecnica.id === id) ?? null;
+  });
 
   constructor() {
     void this.loadPeticiones();
@@ -291,11 +318,28 @@ export class PeticionesResultadosPage {
     if (!tecnicaId) {
       return;
     }
-    this.draft.update((current) =>
-      current.tecnicas.some((linea) => linea.tecnicaId === tecnicaId)
-        ? current
-        : { ...current, tecnicas: [...current.tecnicas, { tecnicaId, precio: null } satisfies PeticionTecnica] },
-    );
+    const porId = new Map(this.tecnicasCompletas().map((tecnica) => [tecnica.id, tecnica]));
+
+    this.draft.update((current) => {
+      const yaIncluidas = new Set(current.tecnicas.map((linea) => linea.tecnicaId));
+      const idsAAñadir = [tecnicaId];
+
+      // Si es una Agrupación de pruebas, sus técnicas asociadas se añaden automáticamente.
+      const tecnica = porId.get(tecnicaId);
+      if (tecnica?.tipoResultadoId === 'agrupacion-pruebas') {
+        for (const hijaId of tecnica.tecnicasAgrupadasIds) {
+          if (hijaId !== tecnicaId) {
+            idsAAñadir.push(hijaId);
+          }
+        }
+      }
+
+      const nuevasLineas = idsAAñadir
+        .filter((id, index) => idsAAñadir.indexOf(id) === index && !yaIncluidas.has(id))
+        .map((id): PeticionTecnica => ({ tecnicaId: id, precio: null }));
+
+      return nuevasLineas.length === 0 ? current : { ...current, tecnicas: [...current.tecnicas, ...nuevasLineas] };
+    });
   }
 
   protected removeTecnica(tecnicaId: string): void {
@@ -303,6 +347,9 @@ export class PeticionesResultadosPage {
       ...current,
       tecnicas: current.tecnicas.filter((linea) => linea.tecnicaId !== tecnicaId),
     }));
+    if (this.lineaEnEdicionId() === tecnicaId) {
+      this.lineaEnEdicionId.set(null);
+    }
   }
 
   protected updateTecnicaPrecio(tecnicaId: string, precio: number | null): void {
@@ -310,6 +357,19 @@ export class PeticionesResultadosPage {
       ...current,
       tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, precio } : linea)),
     }));
+  }
+
+  protected abrirEdicionTecnica(tecnicaId: string): void {
+    this.lineaEnEdicionId.set(tecnicaId);
+  }
+
+  protected cerrarEdicionTecnica(): void {
+    this.lineaEnEdicionId.set(null);
+  }
+
+  /** El formulario de edición pudo cambiar código/nombre/grupo: refresca el catálogo de técnicas. */
+  protected async onTecnicaEditadaGuardada(): Promise<void> {
+    await this.loadCatalogs();
   }
 
   protected async guardar(): Promise<void> {
@@ -380,18 +440,29 @@ export class PeticionesResultadosPage {
   }
 
   private async loadCatalogs(): Promise<void> {
-    const [sociedades, procedencias, peticionarios, tiposPeticion, estadosFacturacion, destinos, tecnicas, provincias, sexosEspecies] =
-      await Promise.all([
-        this.sociedadRepository.list(),
-        this.procedenciaRepository.list(),
-        this.peticionarioRepository.list(),
-        this.tipoPeticionRepository.list(),
-        this.catalogService.load('estados-facturacion'),
-        this.destinoRepository.list(),
-        this.tecnicaRepository.list(),
-        this.catalogService.load('provincias'),
-        this.sexoEspecieRepository.list(),
-      ]);
+    const [
+      sociedades,
+      procedencias,
+      peticionarios,
+      tiposPeticion,
+      estadosFacturacion,
+      destinos,
+      tecnicas,
+      provincias,
+      sexosEspecies,
+      grupos,
+    ] = await Promise.all([
+      this.sociedadRepository.list(),
+      this.procedenciaRepository.list(),
+      this.peticionarioRepository.list(),
+      this.tipoPeticionRepository.list(),
+      this.catalogService.load('estados-facturacion'),
+      this.destinoRepository.list(),
+      this.tecnicaRepository.list(),
+      this.catalogService.load('provincias'),
+      this.sexoEspecieRepository.list(),
+      this.grupoRepository.list(),
+    ]);
 
     this.sociedades.set(sociedades.map((sociedad) => ({ id: sociedad.id, nombre: sociedad.nombre })));
     this.procedencias.set(
@@ -419,6 +490,8 @@ export class PeticionesResultadosPage {
     this.tecnicas.set(
       tecnicas.map((tecnica) => ({ id: tecnica.id, nombre: tecnica.codigo ? `${tecnica.codigo} — ${tecnica.nombre}` : tecnica.nombre })),
     );
+    this.tecnicasCompletas.set(tecnicas);
+    this.grupos.set(grupos.map((grupo) => ({ id: grupo.id, nombre: grupo.nombre })));
     this.provincias.set(provincias);
     this.sexosEspecies.set(
       sexosEspecies.map((item) => ({

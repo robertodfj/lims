@@ -256,7 +256,10 @@
             <table class="table">
               <thead>
                 <tr>
+                  <th scope="col">Código</th>
                   <th scope="col">Técnica</th>
+                  <th scope="col">Grupo</th>
+                  <th scope="col">Tiempo de respuesta</th>
                   <th scope="col" class="is-num">Precio</th>
                   <th scope="col" class="is-num">Acciones</th>
                 </tr>
@@ -264,7 +267,10 @@
               <tbody>
                 @for (item of lineasSolicitud(); track item.linea.tecnicaId) {
                   <tr>
+                    <td class="cell-muted">{{ item.codigo }}</td>
                     <td class="cell-primary">{{ item.nombre }}</td>
+                    <td class="cell-muted">{{ item.grupo }}</td>
+                    <td class="cell-muted">{{ item.tiempoRespuesta }}</td>
                     <td class="is-num">
                       <input
                         class="input peticion-tecnicas__precio"
@@ -277,19 +283,29 @@
                       />
                     </td>
                     <td class="is-num">
-                      <button
-                        type="button"
-                        class="btn btn--ghost btn--icon btn--sm"
-                        (click)="removeTecnica(item.linea.tecnicaId)"
-                        aria-label="Quitar técnica"
-                      >
-                        <app-icon name="x" [size]="14" />
-                      </button>
+                      <div class="row-actions">
+                        <button
+                          type="button"
+                          class="btn btn--ghost btn--icon btn--sm"
+                          (click)="abrirEdicionTecnica(item.linea.tecnicaId)"
+                          aria-label="Editar técnica"
+                        >
+                          <app-icon name="pencil" [size]="14" />
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn--ghost btn--icon btn--sm"
+                          (click)="removeTecnica(item.linea.tecnicaId)"
+                          aria-label="Quitar técnica"
+                        >
+                          <app-icon name="x" [size]="14" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="3">
+                    <td colspan="6">
                       <div class="empty-state empty-state--inline">
                         <p class="empty-state__title">No hay datos que mostrar</p>
                       </div>
@@ -699,4 +715,11 @@
     <button type="button" class="btn btn--primary" (click)="crearPacienteDesdeBusqueda()">Crear paciente</button>
   </div>
 </app-modal>
+
+<app-tecnica-edit-drawer
+  [open]="tecnicaEnEdicion() !== null"
+  [tecnica]="tecnicaEnEdicion()"
+  (closed)="cerrarEdicionTecnica()"
+  (saved)="onTecnicaEditadaGuardada()"
+/>
 
