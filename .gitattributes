@@ -1,0 +1,15 @@
+# Normalize line endings to LF in the repository regardless of the
+# checkout platform, so Git never has to convert on checkout/commit and
+# never prints "LF will be replaced by CRLF" warnings on Windows.
+* text=auto eol=lf
+
+# Binary assets: never touch line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
