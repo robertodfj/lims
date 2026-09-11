@@ -1,0 +1,29 @@
+importacion y exportacion excel
+resultados
+avanzados mantenimientos
+funcionalidad de avanzados
+parte de modulos al completo
+parte de tablas dinamicas
+
+pasar auditoria completa de codigo + funcionalidades
+creacion de test de frontend
+
+creacion de auditor + logs
+
+
+crear base de datos una vez acabado el front
+crear el backend en spring / net viendo que es mejor
+
+Realizar:
+Comentarios: avanzado campos y que funcione en informe
+Grupos campos y avanzado ademas de que funcione salto de pagina en informe y orden
+Base de pacientes completo
+Laboratorios de referencia
+Añadir comentarios en las peticiones
+
+Resultados alfabeticos hacer que sean seleccionables
+Sexo especie 
+Paso de pagina en peticiones y no salir al guardar
+Guardado por lotes
+Al tener alfabetico mostrar en avanzado alfabetico permitiendo Añadir
+en la peticion solo mostrar los que tiene añadidos en resultados
