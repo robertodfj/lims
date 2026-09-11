@@ -2,6 +2,10 @@
 export interface PeticionTecnica {
   tecnicaId: string;
   precio: number | null;
+  /** Valor introducido en la pestaña Resultados (numérico, texto libre o alfabético según la técnica). */
+  resultado: string | null;
+  /** Marca el resultado como revisado/validado por el técnico (pestaña Resultados). */
+  validado: boolean;
 }
 
 export interface Peticion {

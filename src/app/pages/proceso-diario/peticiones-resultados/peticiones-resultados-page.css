@@ -1,9 +1,37 @@
 :host {
   display: block;
+  /* Toda la página (lista y formulario) queda acotada a la altura disponible: el scroll
+     nunca lo hace la ventana entera, solo las zonas internas que lo necesiten (tablas). */
+  height: 100%;
+  overflow: hidden;
 }
 
 .field__required {
   color: var(--danger);
+}
+
+/* ==========================================================================
+   Listado de peticiones: cabecera y filtros fijos, solo la tabla scrollea
+   ========================================================================== */
+
+.peticiones-list-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* El global .page trae padding-bottom pensado para una página que scrollea entera;
+     aquí el scroll lo hace la tabla, así que no hace falta ese hueco final. */
+  padding-bottom: 20px;
+}
+
+.peticiones-list-page .toolbar {
+  flex-shrink: 0;
+}
+
+.peticiones-list-page .table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ==========================================================================
@@ -15,6 +43,46 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+}
+
+/* ==========================================================================
+   Resumen de la petición (visible en todas las pestañas) + botón Imprimir
+   ========================================================================== */
+
+.peticion-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 10px 16px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.peticion-summary__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.peticion-summary__title strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.peticion-summary__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+
+.peticion-summary__print {
+  margin-left: auto;
 }
 
 .peticion-tabs {
@@ -87,7 +155,20 @@
   flex-direction: column;
   gap: 14px;
   padding: 14px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+}
+
+/* Pestaña Resultados: el toolbar (Imprimir, filtros) queda fijo y solo la tabla scrollea. */
+.peticion-panel__body--table {
+  padding-top: 10px;
+}
+
+.peticion-panel > .toolbar {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 14px 14px 0;
 }
 
 .peticion-layout--full {
@@ -227,16 +308,54 @@
 }
 
 /* ==========================================================================
+   Pestaña Resultados
+   ========================================================================== */
+
+.resultados-toolbar__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.resultados-table__resultado {
+  width: 140px;
+  font-weight: 600;
+}
+
+.resultados-table__resultado.is-alto,
+.resultados-table__resultado.is-bajo {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ==========================================================================
    Pie de acciones
    ========================================================================== */
 
 .peticion-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
+  flex-wrap: wrap;
+  /* Sombra sutil hacia arriba: indica que hay contenido scrolleable por encima. */
+  box-shadow: 0 -4px 10px -6px rgb(0 0 0 / 12%);
+}
+
+.peticion-footer__cancel {
+  margin-right: auto;
+}
+
+.peticion-footer__save-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
 }

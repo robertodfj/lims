@@ -1,5 +1,5 @@
 @if (mode() === 'list') {
-  <div class="page">
+  <div class="page peticiones-list-page">
     <div class="page-header">
       <div>
         <h1 class="page-header__title">Peticiones y resultados</h1>
@@ -93,6 +93,16 @@
                       </button>
                       <button
                         type="button"
+                        class="btn btn--ghost btn--icon btn--sm"
+                        [disabled]="row.peticion.tecnicas.length === 0"
+                        [title]="row.peticion.tecnicas.length === 0 ? 'Añade al menos una técnica para poder imprimir' : 'Imprimir'"
+                        (click)="abrirImprimirFila(row.peticion.id)"
+                        aria-label="Imprimir"
+                      >
+                        <app-icon name="printer" [size]="14" />
+                      </button>
+                      <button
+                        type="button"
                         class="btn btn--danger-ghost btn--icon btn--sm"
                         (click)="requestDelete(row.peticion.id)"
                         aria-label="Eliminar"
@@ -120,6 +130,34 @@
   </div>
 } @else {
   <div class="peticion-form">
+    <div class="peticion-summary">
+      <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="cancelarForm()" aria-label="Volver al listado" title="Volver al listado">
+        <app-icon name="arrow-left" [size]="15" />
+      </button>
+      <div class="peticion-summary__title">
+        <app-icon name="pencil" [size]="14" />
+        <span>{{ draft().id ? 'Modificar Petición' : 'Nueva Petición' }}:</span>
+        <strong>{{ draft().numRegistro }} — {{ draft().fechaVisita | date: 'dd/MM/yyyy' }} — {{ pacienteNombreCompleto() }}</strong>
+      </div>
+      <div class="peticion-summary__meta">
+        <span>Tipo: <strong>{{ tipoPeticionNombre() }}</strong></span>
+        @if (edadPaciente() !== null) {
+          <span>Edad: <strong>{{ edadPaciente() }} años</strong></span>
+        }
+        <span>Precio: <strong>{{ totalPrecio() | number: '1.2-2' }} €</strong></span>
+      </div>
+      <button
+        type="button"
+        class="btn btn--primary btn--sm peticion-summary__print"
+        [disabled]="!puedeImprimir()"
+        [title]="puedeImprimir() ? 'Imprimir informe' : 'Guarda la petición con al menos una técnica para poder imprimir'"
+        (click)="abrirImprimirDraft()"
+      >
+        <app-icon name="printer" [size]="14" />
+        Imprimir
+      </button>
+    </div>
+
     <div class="peticion-tabs">
       <button
         type="button"
@@ -137,7 +175,16 @@
       >
         Datos demográficos
       </button>
-      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Resultados</button>
+      <button
+        type="button"
+        class="peticion-tabs__tab"
+        [class.is-active]="activeTab() === 'resultados'"
+        [disabled]="draft().id === ''"
+        [title]="draft().id === '' ? 'Guarda la petición para poder informar resultados' : ''"
+        (click)="activeTab.set('resultados')"
+      >
+        Resultados
+      </button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Seroteca</button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Distribución de muestras</button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Auditor</button>
@@ -658,18 +705,132 @@
     </div>
     }
 
+    @if (activeTab() === 'resultados') {
+    <div class="peticion-layout peticion-layout--full">
+      <div class="peticion-panel">
+        <div class="toolbar">
+          <button
+            type="button"
+            class="btn btn--primary btn--sm"
+            [disabled]="!puedeImprimir()"
+            (click)="abrirImprimirDraft()"
+          >
+            <app-icon name="printer" [size]="14" />
+            Imprimir
+          </button>
+
+          <label class="resultados-toolbar__toggle">
+            <input type="checkbox" [ngModel]="soloSinInformar()" (ngModelChange)="soloSinInformar.set($event)" />
+            Sin informar
+          </label>
+
+          <label class="search-input toolbar__search">
+            <app-icon name="search" [size]="15" />
+            <input
+              class="input"
+              type="text"
+              placeholder="Buscar por código o técnica…"
+              [ngModel]="resultadosSearch()"
+              (ngModelChange)="resultadosSearch.set($event)"
+            />
+          </label>
+
+          <span class="toolbar__spacer"></span>
+          <span class="toolbar__count">Nº Pruebas: {{ draft().tecnicas.length }}</span>
+        </div>
+
+        <div class="peticion-panel__body peticion-panel__body--table">
+        <div class="peticion-tecnicas table-wrap">
+          <table class="table resultados-table">
+            <thead>
+              <tr>
+                <th scope="col" class="is-num">Validado</th>
+                <th scope="col">Código</th>
+                <th scope="col">Técnica</th>
+                <th scope="col">Resultado</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Valores de referencia</th>
+                <th scope="col">Desviación</th>
+                <th scope="col">Laboratorio de referencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of lineasResultadosFiltradas(); track item.linea.tecnicaId) {
+                <tr>
+                  <td class="is-num">
+                    <input
+                      type="checkbox"
+                      [ngModel]="item.linea.validado"
+                      (ngModelChange)="updateTecnicaValidado(item.linea.tecnicaId, $event)"
+                      [name]="'validado-' + item.linea.tecnicaId"
+                      aria-label="Validado"
+                    />
+                  </td>
+                  <td class="cell-muted">{{ item.codigo }}</td>
+                  <td class="cell-primary">{{ item.nombre }}</td>
+                  <td>
+                    @if (item.tipoResultadoId === 'agrupacion-pruebas') {
+                      <span class="cell-muted">—</span>
+                    } @else {
+                      <input
+                        class="input resultados-table__resultado"
+                        [class.is-alto]="item.desviacion === 'alto'"
+                        [class.is-bajo]="item.desviacion === 'bajo'"
+                        type="text"
+                        [ngModel]="item.linea.resultado"
+                        (ngModelChange)="updateTecnicaResultado(item.linea.tecnicaId, $event)"
+                        [name]="'resultado-' + item.linea.tecnicaId"
+                      />
+                    }
+                  </td>
+                  <td class="cell-muted">{{ item.unidad || '—' }}</td>
+                  <td class="cell-muted">{{ item.referenciaTexto || '—' }}</td>
+                  <td>
+                    @if (item.desviacion === 'alto') {
+                      <span class="badge badge--danger">↑ Alto</span>
+                    } @else if (item.desviacion === 'bajo') {
+                      <span class="badge badge--danger">↓ Bajo</span>
+                    } @else if (item.desviacion === 'normal') {
+                      <span class="badge badge--success">Normal</span>
+                    } @else {
+                      <span class="cell-muted">—</span>
+                    }
+                  </td>
+                  <td class="cell-muted">{{ item.laboratorioNombre || '—' }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8">
+                    <div class="empty-state empty-state--inline">
+                      <p class="empty-state__title">No hay datos que mostrar</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        </div>
+      </div>
+    </div>
+    }
+
     <div class="peticion-footer">
-      <button type="button" class="btn btn--secondary" (click)="cancelarForm()">Cancelar</button>
-      <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYDatos()">
-        Guardar Y Datos (F8)
-      </button>
-      <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYNuevo()">Guardar Y Nuevo (F9)</button>
-      <button type="button" class="btn btn--secondary" disabled title="Pendiente: requiere procesamiento por lotes">
-        Guardar Por Lotes (F7)
-      </button>
-      <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="guardar()">
-        {{ saving() ? 'Guardando…' : 'Guardar' }}
-      </button>
+      <button type="button" class="btn btn--secondary peticion-footer__cancel" (click)="cancelarForm()">Cancelar</button>
+      <div class="peticion-footer__save-group">
+        <button type="button" class="btn btn--secondary" disabled title="Pendiente: requiere procesamiento por lotes">
+          Guardar Por Lotes (F7)
+        </button>
+        <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYNuevo()">
+          Guardar Y Nuevo (F9)
+        </button>
+        <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYDatos()">
+          Guardar Y Datos (F8)
+        </button>
+        <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="guardar()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
     </div>
   </div>
 }
@@ -722,4 +883,34 @@
   (closed)="cerrarEdicionTecnica()"
   (saved)="onTecnicaEditadaGuardada()"
 />
+
+<app-modal [open]="imprimirModalOpen()" title="Imprimir petición" size="sm" (closed)="cerrarImprimir()">
+  <div class="field">
+    <label class="field__label" for="f-modeloInforme">Modelo de informe</label>
+    @if (modelosInforme().length === 0) {
+      <p class="peticion-candidatos__hint">
+        Todavía no hay ningún modelo creado en Reporting. Crea uno desde Reporting antes de imprimir.
+      </p>
+    } @else {
+      <select
+        id="f-modeloInforme"
+        class="select"
+        [ngModel]="modeloSeleccionadoId()"
+        (ngModelChange)="modeloSeleccionadoId.set($event)"
+      >
+        @for (modelo of modelosInforme(); track modelo.id) {
+          <option [value]="modelo.id">{{ modelo.name }}</option>
+        }
+      </select>
+    }
+  </div>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="cerrarImprimir()">Cancelar</button>
+    <button type="button" class="btn btn--primary" [disabled]="!modeloSeleccionadoId()" (click)="confirmarImprimir()">
+      <app-icon name="printer" [size]="14" />
+      Abrir informe
+    </button>
+  </div>
+</app-modal>
 

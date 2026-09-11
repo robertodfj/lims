@@ -1,7 +1,9 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
+import { ReportSummary } from '../../../reporting/models/report.model';
+import { REPORT_REPOSITORY } from '../../../reporting/services/reporting.tokens';
 import { Icon } from '../../../shared/icon/icon';
 import { Modal } from '../../../shared/modal/modal';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
@@ -9,6 +11,7 @@ import { createEmptyPaciente, Paciente } from '../../mantenimientos/base-pacient
 import { PACIENTE_REPOSITORY } from '../../mantenimientos/base-pacientes/base-pacientes.tokens';
 import { DESTINO_REPOSITORY } from '../../mantenimientos/destino-informes/destinos.tokens';
 import { GRUPO_REPOSITORY } from '../../mantenimientos/grupos-tecnicas/grupos-tecnicas.tokens';
+import { LABORATORIO_REFERENCIA_REPOSITORY } from '../../mantenimientos/laboratorios-referencia/laboratorios-referencia.tokens';
 import { PETICIONARIO_REPOSITORY } from '../../mantenimientos/peticionarios/peticionarios.tokens';
 import { PROCEDENCIA_REPOSITORY } from '../../mantenimientos/procedencias/procedencias.tokens';
 import { SEXO_ESPECIE_REPOSITORY } from '../../mantenimientos/sexo-especie/sexo-especie.tokens';
@@ -21,6 +24,7 @@ import { createEmptyPeticion, Peticion, PeticionTecnica } from './peticion.model
 import { PETICION_REPOSITORY } from './peticiones.tokens';
 
 type RangeFilter = 'todas' | 'hoy' | 'mes' | 'anio' | 'rango';
+type Desviacion = 'bajo' | 'alto' | 'normal' | null;
 
 interface PeticionRow {
   readonly peticion: Peticion;
@@ -39,9 +43,41 @@ function toDateOnlyValue(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** Texto "70 - 110" (o "< 200" si solo hay tope superior) a partir de los límites de la técnica. */
+function formatReferencia(tecnica: Tecnica | undefined): string {
+  if (!tecnica || (tecnica.referencia1 == null && tecnica.referencia2 == null)) {
+    return '';
+  }
+  if (tecnica.referencia1 != null && tecnica.referencia2 != null) {
+    return `${tecnica.referencia1} - ${tecnica.referencia2}`;
+  }
+  if (tecnica.referencia2 != null) {
+    return `< ${tecnica.referencia2}`;
+  }
+  return `> ${tecnica.referencia1}`;
+}
+
+/** Compara el resultado numérico con los límites de normalidad de la técnica. */
+function computeDesviacion(tecnica: Tecnica | undefined, resultado: string | null): Desviacion {
+  if (!tecnica || tecnica.tipoResultadoId !== 'numerico' || !resultado?.trim()) {
+    return null;
+  }
+  const valor = Number(resultado);
+  if (Number.isNaN(valor)) {
+    return null;
+  }
+  if (tecnica.referencia1 != null && valor < tecnica.referencia1) {
+    return 'bajo';
+  }
+  if (tecnica.referencia2 != null && valor > tecnica.referencia2) {
+    return 'alto';
+  }
+  return tecnica.referencia1 != null || tecnica.referencia2 != null ? 'normal' : null;
+}
+
 @Component({
   selector: 'app-peticiones-resultados-page',
-  imports: [FormsModule, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer],
+  imports: [FormsModule, DatePipe, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './peticiones-resultados-page.html',
   styleUrl: './peticiones-resultados-page.css',
@@ -58,9 +94,11 @@ export class PeticionesResultadosPage {
   private readonly grupoRepository = inject(GRUPO_REPOSITORY);
   private readonly pacienteRepository = inject(PACIENTE_REPOSITORY);
   private readonly sexoEspecieRepository = inject(SEXO_ESPECIE_REPOSITORY);
+  private readonly laboratorioReferenciaRepository = inject(LABORATORIO_REFERENCIA_REPOSITORY);
+  private readonly reportRepository = inject(REPORT_REPOSITORY);
 
   protected readonly mode = signal<'list' | 'form'>('list');
-  protected readonly activeTab = signal<'peticion' | 'demograficos'>('peticion');
+  protected readonly activeTab = signal<'peticion' | 'demograficos' | 'resultados'>('peticion');
 
   protected readonly peticiones = signal<Peticion[] | null>(null);
 
@@ -196,6 +234,90 @@ export class PeticionesResultadosPage {
   protected readonly totalPrecio = computed(() =>
     this.draft().tecnicas.reduce((total, linea) => total + (linea.precio ?? 0), 0),
   );
+
+  // ---------------------------------------------------------------------
+  // Cabecera de la petición (resumen visible en cualquier pestaña) e impresión
+  // ---------------------------------------------------------------------
+
+  protected readonly pacienteNombreCompleto = computed(() => {
+    const paciente = this.pacienteDraft();
+    const nombre = [paciente.apellidos.trim(), paciente.nombre.trim()].filter(Boolean).join(', ');
+    return nombre || '—';
+  });
+
+  protected readonly edadPaciente = computed(() => {
+    const fechaNacimiento = this.pacienteDraft().fechaNacimiento;
+    if (!fechaNacimiento) {
+      return null;
+    }
+    const nacimiento = new Date(fechaNacimiento);
+    if (Number.isNaN(nacimiento.getTime())) {
+      return null;
+    }
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const aunNoCumple =
+      hoy.getMonth() < nacimiento.getMonth() ||
+      (hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() < nacimiento.getDate());
+    if (aunNoCumple) {
+      edad -= 1;
+    }
+    return edad >= 0 ? edad : null;
+  });
+
+  protected readonly tipoPeticionNombre = computed(() => {
+    const id = this.draft().tipoPeticionId;
+    return (id && this.tiposPeticion().find((tipo) => tipo.id === id)?.nombre) || '—';
+  });
+
+  /** Solo se puede imprimir una petición ya guardada (con id) y con al menos una técnica. */
+  protected readonly puedeImprimir = computed(() => this.draft().id !== '' && this.draft().tecnicas.length > 0);
+
+  protected readonly modelosInforme = signal<ReportSummary[]>([]);
+  protected readonly imprimirModalOpen = signal(false);
+  protected readonly modeloSeleccionadoId = signal<string | null>(null);
+  /** Id de la petición a imprimir: puede venir de la cabecera del formulario o de una fila del listado. */
+  private imprimirPeticionId: string | null = null;
+
+  // ---------------------------------------------------------------------
+  // Pestaña Resultados
+  // ---------------------------------------------------------------------
+
+  protected readonly resultadosSearch = signal('');
+  protected readonly soloSinInformar = signal(false);
+
+  protected readonly lineasResultados = computed(() => {
+    const porId = new Map(this.tecnicasCompletas().map((tecnica) => [tecnica.id, tecnica]));
+    return this.draft().tecnicas.map((linea) => {
+      const tecnica = porId.get(linea.tecnicaId);
+      return {
+        linea,
+        codigo: tecnica?.codigo ?? '—',
+        nombre: tecnica?.nombre ?? linea.tecnicaId,
+        tipoResultadoId: tecnica?.tipoResultadoId ?? null,
+        unidad: tecnica?.unidad1 || '',
+        referenciaTexto: formatReferencia(tecnica),
+        desviacion: computeDesviacion(tecnica, linea.resultado),
+        laboratorioNombre: this.laboratoriosExternosPorId().get(tecnica?.laboratorioExternoId ?? '') ?? '',
+      };
+    });
+  });
+
+  protected readonly laboratoriosExternos = signal<readonly CatalogItem[]>([]);
+  private readonly laboratoriosExternosPorId = computed(
+    () => new Map(this.laboratoriosExternos().map((laboratorio) => [laboratorio.id, laboratorio.nombre])),
+  );
+
+  protected readonly lineasResultadosFiltradas = computed(() => {
+    const term = this.resultadosSearch().trim().toLowerCase();
+    const soloSinInformar = this.soloSinInformar();
+    return this.lineasResultados()
+      .filter((item) => !soloSinInformar || !item.linea.resultado?.trim())
+      .filter(
+        (item) =>
+          !term || item.nombre.toLowerCase().includes(term) || item.codigo.toLowerCase().includes(term),
+      );
+  });
 
   /** Id de la técnica cuya línea se está editando; null = drawer cerrado. */
   private readonly lineaEnEdicionId = signal<string | null>(null);
@@ -336,7 +458,7 @@ export class PeticionesResultadosPage {
 
       const nuevasLineas = idsAAñadir
         .filter((id, index) => idsAAñadir.indexOf(id) === index && !yaIncluidas.has(id))
-        .map((id): PeticionTecnica => ({ tecnicaId: id, precio: null }));
+        .map((id): PeticionTecnica => ({ tecnicaId: id, precio: null, resultado: null, validado: false }));
 
       return nuevasLineas.length === 0 ? current : { ...current, tecnicas: [...current.tecnicas, ...nuevasLineas] };
     });
@@ -357,6 +479,58 @@ export class PeticionesResultadosPage {
       ...current,
       tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, precio } : linea)),
     }));
+  }
+
+  protected updateTecnicaResultado(tecnicaId: string, resultado: string | null): void {
+    this.draft.update((current) => ({
+      ...current,
+      tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, resultado } : linea)),
+    }));
+  }
+
+  protected updateTecnicaValidado(tecnicaId: string, validado: boolean): void {
+    this.draft.update((current) => ({
+      ...current,
+      tecnicas: current.tecnicas.map((linea) => (linea.tecnicaId === tecnicaId ? { ...linea, validado } : linea)),
+    }));
+  }
+
+  // ---------------------------------------------------------------------
+  // Imprimir: modal de selección de modelo + apertura del informe en otra pestaña
+  // ---------------------------------------------------------------------
+
+  /** Botón "Imprimir" de la cabecera del formulario: imprime la petición en edición. */
+  protected abrirImprimirDraft(): void {
+    if (!this.puedeImprimir()) {
+      return;
+    }
+    void this.abrirImprimir(this.draft().id);
+  }
+
+  /** Icono "Imprimir" de una fila del listado: imprime esa petición directamente. */
+  protected abrirImprimirFila(peticionId: string): void {
+    void this.abrirImprimir(peticionId);
+  }
+
+  private async abrirImprimir(peticionId: string): Promise<void> {
+    this.imprimirPeticionId = peticionId;
+    this.modelosInforme.set(await this.reportRepository.list());
+    this.modeloSeleccionadoId.set(this.modelosInforme()[0]?.id ?? null);
+    this.imprimirModalOpen.set(true);
+  }
+
+  protected cerrarImprimir(): void {
+    this.imprimirModalOpen.set(false);
+  }
+
+  protected confirmarImprimir(): void {
+    const reportId = this.modeloSeleccionadoId();
+    const peticionId = this.imprimirPeticionId;
+    if (!reportId || !peticionId) {
+      return;
+    }
+    window.open(`/imprimir/${reportId}/${peticionId}`, '_blank', 'noopener');
+    this.imprimirModalOpen.set(false);
   }
 
   protected abrirEdicionTecnica(tecnicaId: string): void {
@@ -451,6 +625,7 @@ export class PeticionesResultadosPage {
       provincias,
       sexosEspecies,
       grupos,
+      laboratoriosExternos,
     ] = await Promise.all([
       this.sociedadRepository.list(),
       this.procedenciaRepository.list(),
@@ -462,6 +637,7 @@ export class PeticionesResultadosPage {
       this.catalogService.load('provincias'),
       this.sexoEspecieRepository.list(),
       this.grupoRepository.list(),
+      this.laboratorioReferenciaRepository.list(),
     ]);
 
     this.sociedades.set(sociedades.map((sociedad) => ({ id: sociedad.id, nombre: sociedad.nombre })));
@@ -498,6 +674,9 @@ export class PeticionesResultadosPage {
         id: item.id,
         nombre: item.codigo ? `${item.codigo} — ${item.sexoEspecie}` : item.sexoEspecie,
       })),
+    );
+    this.laboratoriosExternos.set(
+      laboratoriosExternos.map((laboratorio) => ({ id: laboratorio.id, nombre: laboratorio.nombre })),
     );
   }
 }
