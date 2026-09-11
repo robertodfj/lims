@@ -574,9 +574,13 @@ export class PeticionesResultadosPage {
   }
 
   // ---------------------------------------------------------------------
-  // Modal de comentario de un resultado: al abrir, si la línea ya tiene un comentario
-  // guardado se va directo a editarlo; si no, primero se elige uno de la biblioteca
-  // (Mantenimientos / Comentarios) — de los vinculados a esta técnica, o de todos.
+  // Modal de comentario de un resultado. Al abrir, por este orden:
+  //   1. Si la línea ya tiene un comentario guardado, se va directo a editar ESE texto.
+  //   2. Si no, pero la técnica tiene un "Comentario edición" propio configurado, se
+  //      parte de ese texto (editable) en vez de partir en blanco.
+  //   3. Si tampoco hay eso, se elige uno de la biblioteca (Mantenimientos / Comentarios)
+  //      — de los vinculados a esta técnica, o de todos, buscables por nombre o código.
+  // En cualquier caso, el texto elegido/precargado sigue siendo libremente editable.
   // ---------------------------------------------------------------------
 
   protected readonly comentarios = signal<readonly Comentario[]>([]);
@@ -586,16 +590,19 @@ export class PeticionesResultadosPage {
   protected readonly comentarioModo = signal<'elegir' | 'editar'>('elegir');
   protected readonly comentarioTab = signal<'asociados' | 'todos'>('asociados');
   protected readonly comentarioTexto = signal('');
+  protected readonly comentarioBusqueda = signal('');
 
   protected readonly comentarioLineaActual = computed(() => {
     const tecnicaId = this.comentarioTecnicaId();
     return tecnicaId ? (this.draft().tecnicas.find((linea) => linea.tecnicaId === tecnicaId) ?? null) : null;
   });
 
-  protected readonly comentarioTecnicaNombre = computed(() => {
+  private readonly comentarioTecnicaActual = computed(() => {
     const tecnicaId = this.comentarioTecnicaId();
-    return tecnicaId ? (this.tecnicasCompletas().find((tecnica) => tecnica.id === tecnicaId)?.nombre ?? tecnicaId) : '';
+    return tecnicaId ? (this.tecnicasCompletas().find((tecnica) => tecnica.id === tecnicaId) ?? null) : null;
   });
+
+  protected readonly comentarioTecnicaNombre = computed(() => this.comentarioTecnicaActual()?.nombre ?? this.comentarioTecnicaId() ?? '');
 
   protected readonly comentariosAsociados = computed(() => {
     const tecnicaId = this.comentarioTecnicaId();
@@ -604,17 +611,28 @@ export class PeticionesResultadosPage {
       : [];
   });
 
-  protected readonly comentariosParaElegir = computed(() =>
-    this.comentarioTab() === 'asociados' ? this.comentariosAsociados() : this.comentarios(),
-  );
+  protected readonly comentariosParaElegir = computed(() => {
+    const base = this.comentarioTab() === 'asociados' ? this.comentariosAsociados() : this.comentarios();
+    const term = this.comentarioBusqueda().trim().toLowerCase();
+    return term
+      ? base.filter((comentario) => comentario.nombre.toLowerCase().includes(term) || comentario.codigo.toLowerCase().includes(term))
+      : base;
+  });
 
   protected abrirComentarioTecnica(tecnicaId: string): void {
     const linea = this.draft().tecnicas.find((item) => item.tecnicaId === tecnicaId);
-    const actual = linea?.comentario?.trim() ?? '';
+    const guardado = linea?.comentario?.trim() ?? '';
+    const comentarioEdicion = this.tecnicasCompletas().find((tecnica) => tecnica.id === tecnicaId)?.comentarioEdicion?.trim() ?? '';
+
     this.comentarioTecnicaId.set(tecnicaId);
     this.comentarioTab.set('asociados');
-    if (actual) {
-      this.comentarioTexto.set(actual);
+    this.comentarioBusqueda.set('');
+
+    if (guardado) {
+      this.comentarioTexto.set(guardado);
+      this.comentarioModo.set('editar');
+    } else if (comentarioEdicion) {
+      this.comentarioTexto.set(comentarioEdicion);
       this.comentarioModo.set('editar');
     } else {
       this.comentarioTexto.set('');
@@ -632,6 +650,7 @@ export class PeticionesResultadosPage {
   }
 
   protected volverAElegirComentario(): void {
+    this.comentarioBusqueda.set('');
     this.comentarioModo.set('elegir');
   }
 

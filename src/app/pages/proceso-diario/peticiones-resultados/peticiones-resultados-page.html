@@ -943,16 +943,31 @@
         </button>
       </div>
 
+      <label class="search-input resultado-comentario__search">
+        <app-icon name="search" [size]="14" />
+        <input
+          class="input"
+          type="text"
+          placeholder="Buscar por nombre o código…"
+          [ngModel]="comentarioBusqueda()"
+          (ngModelChange)="comentarioBusqueda.set($event)"
+          name="comentarioBusqueda"
+        />
+      </label>
+
       <ul class="resultado-comentario__list">
         @for (comentario of comentariosParaElegir(); track comentario.id) {
           <li>
             <button type="button" class="resultado-comentario__item" (click)="elegirComentario(comentario)">
+              <span class="resultado-comentario__item-codigo">{{ comentario.codigo }}</span>
               <span class="resultado-comentario__item-nombre">{{ comentario.nombre }}</span>
             </button>
           </li>
         } @empty {
           <li class="resultado-comentario__empty">
-            @if (comentarioTab() === 'asociados') {
+            @if (comentarioBusqueda().trim()) {
+              Sin resultados para la búsqueda.
+            } @else if (comentarioTab() === 'asociados') {
               Esta técnica no tiene comentarios asociados todavía. Prueba en la pestaña "Todos".
             } @else {
               No hay comentarios creados en Mantenimientos / Comentarios.

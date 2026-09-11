@@ -112,7 +112,7 @@
     "laboratorioExternoIncidencias": null,
     "nombreInforme": "Colesterol total",
     "cabeceraEdicion": "",
-    "comentarioEdicion": "",
+    "comentarioEdicion": "Valor sujeto a variación por ayuno incompleto.",
     "valorPorDefecto": "",
     "incluirEnCatalogo": true,
     "incluirEvolucion": true,
