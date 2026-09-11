@@ -18,14 +18,15 @@
 .sgp__grid {
   display: grid;
   gap: 4px;
-  max-width: 120px;
-  max-height: 120px;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
 }
 
 .sgp--sm .sgp__grid {
   gap: 1.5px;
-  max-width: 34px;
-  max-height: 34px;
+  width: 34px;
+  height: 34px;
 }
 
 .sgp__hole {

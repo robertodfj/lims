@@ -188,7 +188,7 @@ svg {
 
 .page {
   padding: 24px 28px 40px;
-  max-width: 1320px;
+  width: 100%;
 }
 
 .page-header {

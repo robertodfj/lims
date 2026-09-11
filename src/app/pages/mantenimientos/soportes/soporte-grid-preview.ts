@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { SoporteOrientacion } from './soporte.model';
 
 const MAX_CELDAS = 24;
 
-/** Vista previa del soporte físico: una rejilla de huecos según filas, columnas y orientación. */
+/** Vista previa del soporte físico: una rejilla de huecos según nº de filas y columnas. */
 @Component({
   selector: 'app-soporte-grid-preview',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,20 +24,17 @@ const MAX_CELDAS = 24;
 export class SoporteGridPreview {
   readonly filas = input<number | null>(null);
   readonly columnas = input<number | null>(null);
-  readonly orientacion = input<SoporteOrientacion>('vertical');
   readonly color = input<string | null>(null);
   readonly size = input<'sm' | 'lg'>('lg');
 
-  private readonly filasSeguras = computed(() => clamp(this.filas()));
-  private readonly columnasSeguras = computed(() => clamp(this.columnas()));
-
-  /** En horizontal el soporte se representa girado: filas y columnas se intercambian. */
-  protected readonly filasVisibles = computed(() =>
-    this.orientacion() === 'vertical' ? this.filasSeguras() : this.columnasSeguras(),
-  );
-  protected readonly columnasVisibles = computed(() =>
-    this.orientacion() === 'vertical' ? this.columnasSeguras() : this.filasSeguras(),
-  );
+  /**
+   * Nº de filas/columnas ya describe la forma física del soporte. La orientación no gira
+   * la rejilla: solo determina el orden de llenado desde Seroteca (horizontal = izquierda a
+   * derecha y de arriba a abajo; vertical = de arriba a abajo y de izquierda a derecha), así
+   * que la vista previa no depende de ella.
+   */
+  protected readonly filasVisibles = computed(() => clamp(this.filas()));
+  protected readonly columnasVisibles = computed(() => clamp(this.columnas()));
 
   protected readonly holes = computed(() => Array.from({ length: this.filasVisibles() * this.columnasVisibles() }));
 }

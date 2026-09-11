@@ -45,13 +45,7 @@
               <td class="is-num cell-muted">{{ soporte.numColumnas }}</td>
               <td class="cell-muted">{{ soporte.orientacion === 'vertical' ? 'Vertical' : 'Horizontal' }}</td>
               <td>
-                <app-soporte-grid-preview
-                  [filas]="soporte.numFilas"
-                  [columnas]="soporte.numColumnas"
-                  [orientacion]="soporte.orientacion"
-                  [color]="soporte.color"
-                  size="sm"
-                />
+                <app-soporte-grid-preview [filas]="soporte.numFilas" [columnas]="soporte.numColumnas" [color]="soporte.color" size="sm" />
               </td>
               <td class="is-num">
                 @if (confirmDeleteId() === soporte.id) {
@@ -178,12 +172,7 @@
 
     <div class="field">
       <label class="field__label">Vista previa</label>
-      <app-soporte-grid-preview
-        [filas]="draft().numFilas"
-        [columnas]="draft().numColumnas"
-        [orientacion]="draft().orientacion"
-        [color]="draft().color"
-      />
+      <app-soporte-grid-preview [filas]="draft().numFilas" [columnas]="draft().numColumnas" [color]="draft().color" />
     </div>
   </form>
 
