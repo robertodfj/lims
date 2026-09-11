@@ -22,6 +22,14 @@ una pantalla, no solo su tipo de dato.
 > Decimales, Interpretación de resultado, Comentarios, Resultados alfabéticos,
 > Fórmula, Artículos) y el editor de fórmulas de las técnicas de tipo Calculado
 > quedan pendientes de implementar.
+>
+> El botón "Avanzado" también existe en **Sociedades** (config. de
+> facturación) y **Destino de informes** (correo/exportación/modelo de
+> informe/condición) — solo visual en los dos. En **Soportes** (contenedores
+> admitidos) y **Contenedores** (destinos preanalíticos admitidos, con
+> prioridad) sí es funcional: ambas pestañas guardan de verdad la
+> asociación. **Peticionarios**, **Procedencias** y **Tipos de petición** no
+> tienen "Avanzado" porque no existe en el sistema original.
 
 ---
 
@@ -295,6 +303,13 @@ secciones (Mantenimientos / Soportes).
   - `Horizontal` → de izquierda a derecha y de arriba a abajo.
   - `Vertical` → de arriba a abajo y de izquierda a derecha.
 
+### Avanzado — Contenedores
+
+Selecciona qué contenedores puede usar este soporte, con dos listas
+(Disponibles / Contenedores asociados) y botones para mover uno a otra. Sin
+ningún contenedor asociado el soporte admite todos (comportamiento por
+defecto); en cuanto se asocia alguno, solo admite los de esa lista.
+
 ---
 
 ## Contenedores *(no documentado en el original; inferido de Técnicas)*
@@ -313,6 +328,16 @@ muestra. Se referencian desde el campo **Contenedor** de Técnicas.
   reconocerlo a simple vista en el laboratorio.
 - **Permanencia Seroteca (Días)**: días que la muestra permanece conservada
   en la seroteca antes de descartarse.
+
+### Avanzado — Destinos preanalíticos
+
+Selecciona qué Destinos (Mantenimiento / Destino de informes) puede usar
+este contenedor como destino preanalítico, con dos listas (Disponibles /
+Asignados) y botones para mover uno a otra. Sin ninguno asignado el
+contenedor admite cualquier destino; en cuanto se asocia alguno, solo admite
+los de esa lista. El botón "Prioridad" (activo solo con algún destino
+asignado) permite indicar un nº de prioridad por destino asignado, para
+saber cuál usar primero.
 
 ---
 
