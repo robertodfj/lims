@@ -1,5 +1,5 @@
 <div class="ss" (keydown.escape)="onEscape($event)">
-  <button type="button" class="ss__trigger" [class.is-open]="open()" (click)="toggle()">
+  <button type="button" class="ss__trigger" [class.is-open]="open()" [disabled]="disabled()" (click)="toggle()">
     <span class="ss__value" [class.is-placeholder]="!selectedLabel()">{{ selectedLabel() || placeholder() }}</span>
     <app-icon name="chevron-down" [size]="14" class="ss__chevron" [class.icon-rot-180]="open()" />
   </button>

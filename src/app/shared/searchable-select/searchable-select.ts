@@ -32,6 +32,7 @@ export class SearchableSelect {
 
   readonly items = input<readonly CatalogItem[]>([]);
   readonly value = input<string | null>(null);
+  readonly disabled = input(false);
   readonly placeholder = input('Seleccione un elemento de la lista o realice una búsqueda');
   /** Sustituye el mensaje por defecto de catálogo vacío (p. ej. "Selecciona primero un país."). */
   readonly emptyMessage = input<string | null>(null);
@@ -68,6 +69,9 @@ export class SearchableSelect {
   }
 
   protected toggle(): void {
+    if (this.disabled()) {
+      return;
+    }
     this.open() ? this.close() : this.openPanel();
   }
 

@@ -26,6 +26,16 @@
   border-color: var(--text-tertiary);
 }
 
+.ss__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background: var(--surface-sunken);
+}
+
+.ss__trigger:disabled:hover {
+  border-color: var(--border-strong);
+}
+
 .ss__trigger.is-open {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-subtle);

@@ -4,9 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { Modal } from '../../../shared/modal/modal';
+import { createEmptyPaciente, Paciente } from '../../mantenimientos/base-pacientes/paciente.model';
+import { PACIENTE_REPOSITORY } from '../../mantenimientos/base-pacientes/base-pacientes.tokens';
 import { DESTINO_REPOSITORY } from '../../mantenimientos/destino-informes/destinos.tokens';
 import { PETICIONARIO_REPOSITORY } from '../../mantenimientos/peticionarios/peticionarios.tokens';
 import { PROCEDENCIA_REPOSITORY } from '../../mantenimientos/procedencias/procedencias.tokens';
+import { SEXO_ESPECIE_REPOSITORY } from '../../mantenimientos/sexo-especie/sexo-especie.tokens';
 import { SOCIEDAD_REPOSITORY } from '../../mantenimientos/sociedades/sociedades.tokens';
 import { TECNICA_REPOSITORY } from '../../mantenimientos/tecnicas/tecnicas.tokens';
 import { TIPO_PETICION_REPOSITORY } from '../../mantenimientos/tipos-peticion/tipos-peticion.tokens';
@@ -34,7 +38,7 @@ function toDateOnlyValue(date: Date): string {
 
 @Component({
   selector: 'app-peticiones-resultados-page',
-  imports: [FormsModule, DecimalPipe, Icon, SearchableSelect],
+  imports: [FormsModule, DecimalPipe, Icon, SearchableSelect, Modal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './peticiones-resultados-page.html',
   styleUrl: './peticiones-resultados-page.css',
@@ -48,8 +52,11 @@ export class PeticionesResultadosPage {
   private readonly tipoPeticionRepository = inject(TIPO_PETICION_REPOSITORY);
   private readonly destinoRepository = inject(DESTINO_REPOSITORY);
   private readonly tecnicaRepository = inject(TECNICA_REPOSITORY);
+  private readonly pacienteRepository = inject(PACIENTE_REPOSITORY);
+  private readonly sexoEspecieRepository = inject(SEXO_ESPECIE_REPOSITORY);
 
   protected readonly mode = signal<'list' | 'form'>('list');
+  protected readonly activeTab = signal<'peticion' | 'demograficos'>('peticion');
 
   protected readonly peticiones = signal<Peticion[] | null>(null);
 
@@ -62,6 +69,29 @@ export class PeticionesResultadosPage {
   protected readonly saving = signal(false);
   protected readonly confirmDeleteId = signal<string | null>(null);
 
+  protected readonly pacienteDraft = signal<Paciente>(createEmptyPaciente());
+  protected readonly buscandoPaciente = signal(false);
+  /** null = modal cerrado; array = candidatos entre los que elegir. */
+  protected readonly candidatosPaciente = signal<Paciente[] | null>(null);
+  /** Se muestra cuando una búsqueda no encuentra ningún paciente. */
+  protected readonly ofrecerCrearPaciente = signal(false);
+
+  /**
+   * Los campos secundarios (contacto, dirección, datos administrativos) solo se habilitan
+   * una vez se ha identificado al paciente con alguno de los campos principales: evita crear
+   * fichas con datos de contacto sueltos sin saber a quién pertenecen.
+   */
+  protected readonly camposSecundariosHabilitados = computed(() => {
+    const paciente = this.pacienteDraft();
+    return !!(
+      paciente.historiaClinica.trim() ||
+      paciente.dni.trim() ||
+      paciente.apellidos.trim() ||
+      paciente.nombre.trim() ||
+      paciente.fechaNacimiento
+    );
+  });
+
   protected readonly sociedades = signal<readonly CatalogItem[]>([]);
   protected readonly procedencias = signal<readonly CatalogItem[]>([]);
   protected readonly peticionarios = signal<readonly CatalogItem[]>([]);
@@ -69,6 +99,8 @@ export class PeticionesResultadosPage {
   protected readonly estadosFacturacion = signal<readonly CatalogItem[]>([]);
   protected readonly destinos = signal<readonly CatalogItem[]>([]);
   protected readonly tecnicas = signal<readonly CatalogItem[]>([]);
+  protected readonly provincias = signal<readonly CatalogItem[]>([]);
+  protected readonly sexosEspecies = signal<readonly CatalogItem[]>([]);
 
   protected readonly mesAnioActual = computed(() =>
     new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(new Date()).toUpperCase(),
@@ -158,16 +190,101 @@ export class PeticionesResultadosPage {
   protected async openNueva(): Promise<void> {
     const numRegistro = await this.repository.nextNumRegistro();
     this.draft.set({ ...createEmptyPeticion(), numRegistro, fechaVisita: toDatetimeLocalValue(new Date()) });
+    this.pacienteDraft.set(createEmptyPaciente());
+    this.candidatosPaciente.set(null);
+    this.ofrecerCrearPaciente.set(false);
+    this.activeTab.set('peticion');
     this.mode.set('form');
   }
 
-  protected openEdit(peticion: Peticion): void {
+  protected async openEdit(peticion: Peticion): Promise<void> {
     this.draft.set({ ...peticion, tecnicas: peticion.tecnicas.map((linea) => ({ ...linea })) });
+    const paciente = peticion.pacienteId ? await this.pacienteRepository.get(peticion.pacienteId) : null;
+    this.pacienteDraft.set(paciente ?? createEmptyPaciente());
+    this.candidatosPaciente.set(null);
+    this.ofrecerCrearPaciente.set(false);
+    this.activeTab.set('peticion');
     this.mode.set('form');
   }
 
   protected cancelarForm(): void {
     this.mode.set('list');
+  }
+
+  protected updatePacienteDraft<K extends keyof Paciente>(key: K, value: Paciente[K]): void {
+    this.pacienteDraft.update((current) => ({ ...current, [key]: value }));
+  }
+
+  /**
+   * Busca combinando los campos principales que se hayan rellenado (cada uno filtra por
+   * separado, en AND): si solo hay Apellidos, busca por apellidos; si hay Nombre y
+   * Apellidos, busca por ambos a la vez, y así con cualquier combinación. Si hay una única
+   * coincidencia la carga directamente; si hay varias, abre el modal para elegir.
+   */
+  protected async buscarPaciente(): Promise<void> {
+    const criterios = this.pacienteDraft();
+    const historiaClinica = criterios.historiaClinica.trim().toLowerCase();
+    const dni = criterios.dni.trim().toLowerCase();
+    const apellidos = criterios.apellidos.trim().toLowerCase();
+    const nombre = criterios.nombre.trim().toLowerCase();
+    const fechaNacimiento = criterios.fechaNacimiento;
+
+    if (!historiaClinica && !dni && !apellidos && !nombre && !fechaNacimiento) {
+      return;
+    }
+
+    this.buscandoPaciente.set(true);
+    try {
+      const pacientes = await this.pacienteRepository.list();
+      const candidatos = pacientes.filter(
+        (paciente) =>
+          (!historiaClinica || paciente.historiaClinica.toLowerCase().includes(historiaClinica)) &&
+          (!dni || paciente.dni.toLowerCase().includes(dni)) &&
+          (!apellidos || paciente.apellidos.toLowerCase().includes(apellidos)) &&
+          (!nombre || paciente.nombre.toLowerCase().includes(nombre)) &&
+          (!fechaNacimiento || paciente.fechaNacimiento === fechaNacimiento),
+      );
+
+      if (candidatos.length === 1) {
+        this.seleccionarPaciente(candidatos[0]);
+      } else if (candidatos.length > 1) {
+        this.candidatosPaciente.set(candidatos);
+      } else {
+        this.ofrecerCrearPaciente.set(true);
+      }
+    } finally {
+      this.buscandoPaciente.set(false);
+    }
+  }
+
+  /** Resumen legible de los criterios usados en la última búsqueda, para el modal de "sin resultados". */
+  protected readonly resumenBusquedaPaciente = computed(() => {
+    const paciente = this.pacienteDraft();
+    const partes: string[] = [];
+    if (paciente.historiaClinica.trim()) partes.push(`historia clínica «${paciente.historiaClinica.trim()}»`);
+    if (paciente.dni.trim()) partes.push(`DNI «${paciente.dni.trim()}»`);
+    if (paciente.apellidos.trim()) partes.push(`apellidos «${paciente.apellidos.trim()}»`);
+    if (paciente.nombre.trim()) partes.push(`nombre «${paciente.nombre.trim()}»`);
+    if (paciente.fechaNacimiento) partes.push(`fecha de nacimiento «${paciente.fechaNacimiento}»`);
+    return partes.join(', ');
+  });
+
+  protected seleccionarPaciente(paciente: Paciente): void {
+    this.pacienteDraft.set({ ...paciente });
+    this.candidatosPaciente.set(null);
+  }
+
+  protected cerrarCandidatosPaciente(): void {
+    this.candidatosPaciente.set(null);
+  }
+
+  protected cerrarOfrecerCrearPaciente(): void {
+    this.ofrecerCrearPaciente.set(false);
+  }
+
+  /** Lo que ya se ha escrito queda en pacienteDraft: solo hay que cerrar el aviso y seguir rellenando. */
+  protected crearPacienteDesdeBusqueda(): void {
+    this.ofrecerCrearPaciente.set(false);
   }
 
   protected addTecnica(tecnicaId: string | null): void {
@@ -209,6 +326,13 @@ export class PeticionesResultadosPage {
     await this.openNueva();
   }
 
+  protected async guardarYDatos(): Promise<void> {
+    if (!(await this.persistirDraft())) {
+      return;
+    }
+    this.activeTab.set('demograficos');
+  }
+
   protected requestDelete(id: string): void {
     this.confirmDeleteId.set(id);
   }
@@ -229,13 +353,20 @@ export class PeticionesResultadosPage {
 
   /** Valida y guarda; devuelve si se pudo guardar (para encadenar "Guardar y Nuevo"). */
   private async persistirDraft(): Promise<boolean> {
-    const value = this.draft();
-    if (!value.sociedadId || !value.procedenciaId || !value.peticionarioId) {
+    let value = this.draft();
+    if (!value.sociedadId || !value.procedenciaId || !value.peticionarioId || value.tecnicas.length === 0) {
       return false;
     }
 
     this.saving.set(true);
     try {
+      const paciente = this.pacienteDraft();
+      if (paciente.apellidos.trim()) {
+        const pacienteGuardado = await this.pacienteRepository.save(paciente);
+        this.pacienteDraft.set(pacienteGuardado);
+        value = { ...value, pacienteId: pacienteGuardado.id };
+      }
+
       await this.repository.save(value);
       await this.loadPeticiones();
       return true;
@@ -249,15 +380,18 @@ export class PeticionesResultadosPage {
   }
 
   private async loadCatalogs(): Promise<void> {
-    const [sociedades, procedencias, peticionarios, tiposPeticion, estadosFacturacion, destinos, tecnicas] = await Promise.all([
-      this.sociedadRepository.list(),
-      this.procedenciaRepository.list(),
-      this.peticionarioRepository.list(),
-      this.tipoPeticionRepository.list(),
-      this.catalogService.load('estados-facturacion'),
-      this.destinoRepository.list(),
-      this.tecnicaRepository.list(),
-    ]);
+    const [sociedades, procedencias, peticionarios, tiposPeticion, estadosFacturacion, destinos, tecnicas, provincias, sexosEspecies] =
+      await Promise.all([
+        this.sociedadRepository.list(),
+        this.procedenciaRepository.list(),
+        this.peticionarioRepository.list(),
+        this.tipoPeticionRepository.list(),
+        this.catalogService.load('estados-facturacion'),
+        this.destinoRepository.list(),
+        this.tecnicaRepository.list(),
+        this.catalogService.load('provincias'),
+        this.sexoEspecieRepository.list(),
+      ]);
 
     this.sociedades.set(sociedades.map((sociedad) => ({ id: sociedad.id, nombre: sociedad.nombre })));
     this.procedencias.set(
@@ -284,6 +418,13 @@ export class PeticionesResultadosPage {
     );
     this.tecnicas.set(
       tecnicas.map((tecnica) => ({ id: tecnica.id, nombre: tecnica.codigo ? `${tecnica.codigo} — ${tecnica.nombre}` : tecnica.nombre })),
+    );
+    this.provincias.set(provincias);
+    this.sexosEspecies.set(
+      sexosEspecies.map((item) => ({
+        id: item.id,
+        nombre: item.codigo ? `${item.codigo} — ${item.sexoEspecie}` : item.sexoEspecie,
+      })),
     );
   }
 }

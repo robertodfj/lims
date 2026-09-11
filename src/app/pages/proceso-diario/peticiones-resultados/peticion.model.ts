@@ -18,6 +18,8 @@ export interface Peticion {
   destinoId: string | null;
   comentario: string;
   tecnicas: PeticionTecnica[];
+  /** Paciente asociado (pestaña Datos demográficos), si se ha buscado/creado uno. */
+  pacienteId: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -35,5 +37,6 @@ export function createEmptyPeticion(): Peticion {
     destinoId: null,
     comentario: '',
     tecnicas: [],
+    pacienteId: null,
   };
 }

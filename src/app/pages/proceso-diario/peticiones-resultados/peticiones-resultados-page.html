@@ -121,14 +121,29 @@
 } @else {
   <div class="peticion-form">
     <div class="peticion-tabs">
-      <button type="button" class="peticion-tabs__tab is-active">Petición de pruebas</button>
-      <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Datos demográficos</button>
+      <button
+        type="button"
+        class="peticion-tabs__tab"
+        [class.is-active]="activeTab() === 'peticion'"
+        (click)="activeTab.set('peticion')"
+      >
+        Petición de pruebas
+      </button>
+      <button
+        type="button"
+        class="peticion-tabs__tab"
+        [class.is-active]="activeTab() === 'demograficos'"
+        (click)="activeTab.set('demograficos')"
+      >
+        Datos demográficos
+      </button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Resultados</button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Seroteca</button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Distribución de muestras</button>
       <button type="button" class="peticion-tabs__tab" disabled title="Pendiente de implementar">Auditor</button>
     </div>
 
+    @if (activeTab() === 'peticion') {
     <div class="peticion-layout">
       <div class="peticion-panel">
         <div class="peticion-panel__header">
@@ -289,13 +304,347 @@
             <span>Nº Pruebas: {{ draft().tecnicas.length }}</span>
             <span>Precio: {{ totalPrecio() | number: '1.2-2' }}</span>
           </div>
+
+          @if (draft().tecnicas.length === 0) {
+            <p class="peticion-tecnicas__hint">Añade al menos una técnica para poder guardar la petición.</p>
+          }
         </div>
       </div>
     </div>
+    }
+
+    @if (activeTab() === 'demograficos') {
+    <div class="peticion-layout peticion-layout--full">
+      <div class="peticion-panel">
+        <div class="peticion-panel__header">Datos demográficos del paciente</div>
+        <div class="peticion-panel__body">
+          <div class="peticion-busqueda">
+            <p class="peticion-busqueda__hint">
+              Rellena cualquier combinación de los campos principales y pulsa «Buscar»: por ejemplo, solo Apellidos, o
+              Nombre y Apellidos a la vez.
+            </p>
+            <button type="button" class="btn btn--secondary" [disabled]="buscandoPaciente()" (click)="buscarPaciente()">
+              <app-icon name="search" [size]="14" />
+              Buscar
+            </button>
+          </div>
+
+          <div class="paciente-fields">
+            <div class="field">
+              <label class="field__label" for="f-historiaClinica">Historia clínica</label>
+              <input
+                id="f-historiaClinica"
+                class="input"
+                type="text"
+                [ngModel]="pacienteDraft().historiaClinica"
+                (ngModelChange)="updatePacienteDraft('historiaClinica', $event)"
+                (keydown.enter)="buscarPaciente()"
+                name="historiaClinica"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-dni">Dni</label>
+              <input
+                id="f-dni"
+                class="input"
+                type="text"
+                maxlength="25"
+                [ngModel]="pacienteDraft().dni"
+                (ngModelChange)="updatePacienteDraft('dni', $event)"
+                (keydown.enter)="buscarPaciente()"
+                name="dni"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-apellidos">Apellidos</label>
+              <input
+                id="f-apellidos"
+                class="input"
+                type="text"
+                maxlength="255"
+                [ngModel]="pacienteDraft().apellidos"
+                (ngModelChange)="updatePacienteDraft('apellidos', $event)"
+                (keydown.enter)="buscarPaciente()"
+                name="apellidos"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-nombre">Nombre</label>
+              <input
+                id="f-nombre"
+                class="input"
+                type="text"
+                maxlength="255"
+                [ngModel]="pacienteDraft().nombre"
+                (ngModelChange)="updatePacienteDraft('nombre', $event)"
+                (keydown.enter)="buscarPaciente()"
+                name="nombre"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-fechaNacimiento">Fecha de nacimiento</label>
+              <input
+                id="f-fechaNacimiento"
+                class="input"
+                type="date"
+                [ngModel]="pacienteDraft().fechaNacimiento"
+                (ngModelChange)="updatePacienteDraft('fechaNacimiento', $event)"
+                (keydown.enter)="buscarPaciente()"
+                name="fechaNacimiento"
+              />
+            </div>
+          </div>
+
+          <div class="paciente-fields__divider">
+            <span>Más datos del paciente</span>
+            @if (!camposSecundariosHabilitados()) {
+              <span class="paciente-fields__hint">Identifica primero al paciente arriba para poder completarlos.</span>
+            }
+          </div>
+
+          <div class="paciente-fields">
+            <div class="field">
+              <label class="field__label">Sexo / Especie</label>
+              <app-searchable-select
+                [items]="sexosEspecies()"
+                [value]="pacienteDraft().sexoEspecieId"
+                [disabled]="!camposSecundariosHabilitados()"
+                (valueChange)="updatePacienteDraft('sexoEspecieId', $event)"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-domicilio">Domicilio</label>
+              <input
+                id="f-domicilio"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().domicilio"
+                (ngModelChange)="updatePacienteDraft('domicilio', $event)"
+                name="domicilio"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-poblacion">Población</label>
+              <input
+                id="f-poblacion"
+                class="input"
+                type="text"
+                maxlength="100"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().poblacion"
+                (ngModelChange)="updatePacienteDraft('poblacion', $event)"
+                name="poblacion"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-cp">Cp</label>
+              <input
+                id="f-cp"
+                class="input"
+                type="text"
+                maxlength="7"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().cp"
+                (ngModelChange)="updatePacienteDraft('cp', $event)"
+                name="cp"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label">Provincia</label>
+              <app-searchable-select
+                [items]="provincias()"
+                [value]="pacienteDraft().provinciaId"
+                [disabled]="!camposSecundariosHabilitados()"
+                (valueChange)="updatePacienteDraft('provinciaId', $event)"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-telefono">Teléfono</label>
+              <input
+                id="f-telefono"
+                class="input"
+                type="text"
+                maxlength="25"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().telefono"
+                (ngModelChange)="updatePacienteDraft('telefono', $event)"
+                name="telefono"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-telefono2">Telefono2</label>
+              <input
+                id="f-telefono2"
+                class="input"
+                type="text"
+                maxlength="50"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().telefono2"
+                (ngModelChange)="updatePacienteDraft('telefono2', $event)"
+                name="telefono2"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-movil">Móvil</label>
+              <input
+                id="f-movil"
+                class="input"
+                type="text"
+                maxlength="25"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().movil"
+                (ngModelChange)="updatePacienteDraft('movil', $event)"
+                name="movil"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-email">E-Mail</label>
+              <input
+                id="f-email"
+                class="input"
+                type="email"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().email"
+                (ngModelChange)="updatePacienteDraft('email', $event)"
+                name="email"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-fax">Fax</label>
+              <input
+                id="f-fax"
+                class="input"
+                type="text"
+                maxlength="50"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().fax"
+                (ngModelChange)="updatePacienteDraft('fax', $event)"
+                name="fax"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label">Sociedad</label>
+              <app-searchable-select
+                [items]="sociedades()"
+                [value]="pacienteDraft().sociedadId"
+                [disabled]="!camposSecundariosHabilitados()"
+                (valueChange)="updatePacienteDraft('sociedadId', $event)"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-historiaClinicaHost">Historia Clínica Host</label>
+              <input
+                id="f-historiaClinicaHost"
+                class="input"
+                type="text"
+                maxlength="50"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().historiaClinicaHost"
+                (ngModelChange)="updatePacienteDraft('historiaClinicaHost', $event)"
+                name="historiaClinicaHost"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar5">Auxiliar5</label>
+              <input
+                id="f-auxiliar5"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar5"
+                (ngModelChange)="updatePacienteDraft('auxiliar5', $event)"
+                name="auxiliar5"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar6">Auxiliar6</label>
+              <input
+                id="f-auxiliar6"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar6"
+                (ngModelChange)="updatePacienteDraft('auxiliar6', $event)"
+                name="auxiliar6"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar7">Auxiliar7</label>
+              <input
+                id="f-auxiliar7"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar7"
+                (ngModelChange)="updatePacienteDraft('auxiliar7', $event)"
+                name="auxiliar7"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar8">Auxiliar8</label>
+              <input
+                id="f-auxiliar8"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar8"
+                (ngModelChange)="updatePacienteDraft('auxiliar8', $event)"
+                name="auxiliar8"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar9">Auxiliar9</label>
+              <input
+                id="f-auxiliar9"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar9"
+                (ngModelChange)="updatePacienteDraft('auxiliar9', $event)"
+                name="auxiliar9"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="f-auxiliar10">Auxiliar10</label>
+              <input
+                id="f-auxiliar10"
+                class="input"
+                type="text"
+                maxlength="255"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().auxiliar10"
+                (ngModelChange)="updatePacienteDraft('auxiliar10', $event)"
+                name="auxiliar10"
+              />
+            </div>
+            <div class="field paciente-fields__full">
+              <label class="field__label" for="f-observaciones">Observaciones</label>
+              <textarea
+                id="f-observaciones"
+                class="textarea"
+                [disabled]="!camposSecundariosHabilitados()"
+                [ngModel]="pacienteDraft().observaciones"
+                (ngModelChange)="updatePacienteDraft('observaciones', $event)"
+                name="observaciones"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
 
     <div class="peticion-footer">
       <button type="button" class="btn btn--secondary" (click)="cancelarForm()">Cancelar</button>
-      <button type="button" class="btn btn--secondary" disabled title="Pendiente: requiere la pestaña Datos demográficos">
+      <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYDatos()">
         Guardar Y Datos (F8)
       </button>
       <button type="button" class="btn btn--secondary" [disabled]="saving()" (click)="guardarYNuevo()">Guardar Y Nuevo (F9)</button>
@@ -308,3 +657,46 @@
     </div>
   </div>
 }
+
+<app-modal
+  [open]="candidatosPaciente() !== null"
+  title="Varios pacientes coinciden"
+  size="md"
+  (closed)="cerrarCandidatosPaciente()"
+>
+  <p class="peticion-candidatos__hint">Elige el paciente correcto:</p>
+  <ul class="peticion-candidatos">
+    @for (paciente of candidatosPaciente(); track paciente.id) {
+      <li class="peticion-candidatos__item">
+        <div class="peticion-candidatos__info">
+          <span class="cell-primary">{{ paciente.apellidos }}, {{ paciente.nombre }}</span>
+          <span class="cell-muted">
+            Historia clínica: {{ paciente.historiaClinica || '—' }} · DNI: {{ paciente.dni || '—' }}
+          </span>
+        </div>
+        <button type="button" class="btn btn--secondary btn--sm" (click)="seleccionarPaciente(paciente)">Seleccionar</button>
+      </li>
+    }
+  </ul>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="cerrarCandidatosPaciente()">Cancelar</button>
+  </div>
+</app-modal>
+
+<app-modal
+  [open]="ofrecerCrearPaciente()"
+  title="Ningún paciente encontrado"
+  size="sm"
+  (closed)="cerrarOfrecerCrearPaciente()"
+>
+  <p class="peticion-candidatos__hint">
+    No se ha encontrado ningún paciente con {{ resumenBusquedaPaciente() }}. ¿Quieres crear uno nuevo con esos datos?
+  </p>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="cerrarOfrecerCrearPaciente()">Cancelar</button>
+    <button type="button" class="btn btn--primary" (click)="crearPacienteDesdeBusqueda()">Crear paciente</button>
+  </div>
+</app-modal>
+
