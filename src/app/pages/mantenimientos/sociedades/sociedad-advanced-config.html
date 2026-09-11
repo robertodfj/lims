@@ -1,0 +1,128 @@
+<p class="avz__intro">
+  Parámetros de facturación que aparecerán seleccionados por defecto al generar la factura de
+  este cliente, pudiendo modificarse antes de generarla.
+</p>
+
+<section class="avz-panel">
+  <h4 class="avz-panel__title">Tipo de factura</h4>
+  <div class="soc-tipo-factura">
+    <button
+      type="button"
+      class="soc-tipo-factura__option"
+      [class.is-active]="tipoFactura() === 'peticion'"
+      (click)="setTipoFactura('peticion')"
+    >
+      <span class="soc-tipo-factura__name">Petición</span>
+      <span class="soc-tipo-factura__desc">
+        Se factura por petición completa; se puede modificar el precio total o el de cada
+        prueba de la petición.
+      </span>
+    </button>
+    <button
+      type="button"
+      class="soc-tipo-factura__option"
+      [class.is-active]="tipoFactura() === 'prueba'"
+      (click)="setTipoFactura('prueba')"
+    >
+      <span class="soc-tipo-factura__name">Prueba</span>
+      <span class="soc-tipo-factura__desc">
+        Se factura por prueba; se puede modificar el precio individual de cada una.
+      </span>
+    </button>
+  </div>
+</section>
+
+<section class="avz-panel">
+  <h4 class="avz-panel__title">Propiedades de factura</h4>
+
+  <label class="checkbox-field">
+    <input type="checkbox" disabled />
+    Incluir precios actuales
+  </label>
+  <p class="avz-panel__hint">
+    Con esta opción, la factura se calcula con los precios configurados hoy para este cliente;
+    si no, con los que estaban grabados al introducir las pruebas.
+  </p>
+
+  <label class="checkbox-field">
+    <input type="checkbox" disabled />
+    Resumir por
+  </label>
+  <select class="select" disabled>
+    <option>Procedencias</option>
+    <option>Peticionarios</option>
+  </select>
+
+  @if (tipoFactura() === 'peticion') {
+    <div class="field">
+      <label class="field__label">Tipo de impresión</label>
+      <select class="select" disabled>
+        <option>Resumida</option>
+        <option>Detallada por petición</option>
+        <option>Detallada por prueba</option>
+      </select>
+    </div>
+  }
+
+  <div class="drawer-form__row">
+    <div class="field">
+      <label class="field__label">Tipo de porcentaje</label>
+      <select class="select" disabled>
+        <option>Sin impuesto</option>
+        <option>IVA general</option>
+        <option>IVA reducido</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field__label">%</label>
+      <input class="input avz-input--xs" type="number" disabled placeholder="0" />
+    </div>
+  </div>
+
+  <div class="drawer-form__row">
+    <div class="field">
+      <label class="field__label">Descuento</label>
+      <input class="input avz-input--xs" type="number" disabled placeholder="0" />
+      <span class="field__hint">Solo el número, sin el símbolo %.</span>
+    </div>
+    <div class="field">
+      <label class="field__label">Serie de factura</label>
+      <select class="select" disabled>
+        <option>Serie general</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<section class="avz-panel">
+  <h4 class="avz-panel__title">Propiedades de facturación en fichero</h4>
+
+  <div class="soc-check-with-input">
+    <label class="checkbox-field">
+      <input type="checkbox" disabled />
+      Comprobar nº operación
+    </label>
+    <input class="input avz-input--sm" type="text" disabled placeholder="Nº de dígitos (p. ej. 8 o 8,10)" />
+  </div>
+
+  <div class="soc-check-with-input">
+    <label class="checkbox-field">
+      <input type="checkbox" disabled />
+      Comprobar tarjeta Seguridad Social
+    </label>
+    <input class="input avz-input--sm" type="text" disabled placeholder="Nº de dígitos (p. ej. 12)" />
+  </div>
+
+  <div class="soc-check-with-input">
+    <label class="checkbox-field">
+      <input type="checkbox" disabled />
+      Comprobar nº documento / autorización
+    </label>
+    <input class="input avz-input--sm" type="text" disabled placeholder="Nº de dígitos" />
+  </div>
+
+  <label class="checkbox-field">
+    <input type="checkbox" disabled />
+    Habilitar alarma en peticiones cuando no exista código de prueba
+  </label>
+</section>

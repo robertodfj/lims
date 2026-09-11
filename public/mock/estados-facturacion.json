@@ -1,5 +1,5 @@
 [
-  { "id": "pendiente", "nombre": "Pendiente" },
-  { "id": "facturado", "nombre": "Facturado" },
-  { "id": "no-facturable", "nombre": "No facturable" }
+  { "id": "facturar", "nombre": "Facturar" },
+  { "id": "prefacturar", "nombre": "Prefacturar" },
+  { "id": "omitir", "nombre": "Omitir" }
 ]

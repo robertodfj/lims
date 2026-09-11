@@ -28,12 +28,6 @@
         />
       </label>
 
-      <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
-        <option value="todos">Todos los estados</option>
-        <option value="activa">Activa</option>
-        <option value="no-activa">No activa</option>
-      </select>
-
       <span class="toolbar__spacer"></span>
       <span class="toolbar__count">{{ filtered().length }} resultados</span>
     </div>
@@ -42,24 +36,20 @@
       <table class="table">
         <thead>
           <tr>
+            <th scope="col">Código</th>
             <th scope="col">Sociedad</th>
             <th scope="col">Población</th>
             <th scope="col">NIF / CIF</th>
-            <th scope="col">Estado</th>
             <th scope="col" class="is-num">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (sociedad of filtered(); track sociedad.id) {
             <tr>
+              <td class="cell-muted">{{ sociedad.codigo }}</td>
               <td class="cell-primary">{{ sociedad.nombre }}</td>
               <td class="cell-muted">{{ sociedad.poblacion || '—' }}</td>
               <td class="cell-muted">{{ sociedad.nifCif || '—' }}</td>
-              <td>
-                <span class="badge" [class.badge--success]="!sociedad.noActiva" [class.badge--neutral]="sociedad.noActiva">
-                  {{ sociedad.noActiva ? 'No activa' : 'Activa' }}
-                </span>
-              </td>
               <td class="is-num">
                 @if (confirmDeleteId() === sociedad.id) {
                   <div class="row-confirm">
@@ -96,9 +86,27 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" size="xl" [title]="draft().id ? 'Editar sociedad' : 'Nueva sociedad'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="sociedad-form" (ngSubmit)="save()">
     <section class="sociedad-form__section">
       <h3 class="section-title">Datos generales</h3>
+
+      <div class="field">
+        <label class="field__label" for="f-codigo">Código</label>
+        <div class="field-with-action">
+          <input
+            id="f-codigo"
+            class="input"
+            type="text"
+            [ngModel]="draft().codigo"
+            (ngModelChange)="updateDraft('codigo', $event)"
+            name="codigo"
+          />
+          <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+            Auto
+          </button>
+        </div>
+      </div>
 
       <div class="field">
         <label class="field__label" for="f-nombre">Nombre sociedad <span class="field__required">*</span></label>
@@ -158,20 +166,13 @@
         </div>
       </div>
 
-      <div class="drawer-form__row">
-        <div class="field">
-          <label class="field__label">País</label>
-          <app-searchable-select [items]="paises()" [value]="draft().paisId" (valueChange)="onPaisChange($event)" />
-        </div>
-        <div class="field">
-          <label class="field__label">Provincia</label>
-          <app-searchable-select
-            [items]="provinciasDelPais()"
-            [value]="draft().provinciaId"
-            [emptyMessage]="draft().paisId ? null : 'Selecciona primero un país.'"
-            (valueChange)="updateDraft('provinciaId', $event)"
-          />
-        </div>
+      <div class="field">
+        <label class="field__label">Provincia</label>
+        <app-searchable-select
+          [items]="provincias()"
+          [value]="draft().provinciaId"
+          (valueChange)="updateDraft('provinciaId', $event)"
+        />
       </div>
     </section>
 
@@ -310,7 +311,7 @@
           />
         </div>
         <div class="field">
-          <label class="field__label">Estado de facturación</label>
+          <label class="field__label">Estado peticiones</label>
           <app-searchable-select
             [items]="estadosFacturacion()"
             [value]="draft().estadoFacturacionId"
@@ -363,25 +364,23 @@
         ></textarea>
       </div>
 
-      <div class="checkbox-grid">
-        <label class="checkbox-field">
-          <input
-            type="checkbox"
-            [ngModel]="draft().avisoEnPeticiones"
-            (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
-            name="avisoEnPeticiones"
-          />
-          Aviso en peticiones
-        </label>
-        <label class="checkbox-field">
-          <input type="checkbox" [ngModel]="draft().noActiva" (ngModelChange)="updateDraft('noActiva', $event)" name="noActiva" />
-          No activa
-        </label>
+      <div class="field">
+        <label class="field__label" for="f-aviso">Aviso en peticiones</label>
+        <textarea
+          id="f-aviso"
+          class="textarea"
+          [ngModel]="draft().avisoEnPeticiones"
+          (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+          name="avisoEnPeticiones"
+          placeholder="Texto que se muestra con un icono de aviso al elegir esta sociedad en una petición…"
+        ></textarea>
       </div>
     </section>
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-sociedad-advanced-config />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>

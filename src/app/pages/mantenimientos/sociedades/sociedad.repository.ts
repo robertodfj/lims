@@ -10,4 +10,6 @@ export interface SociedadRepository {
   get(id: string): Promise<Sociedad | null>;
   save(sociedad: Sociedad): Promise<Sociedad>;
   delete(id: string): Promise<void>;
+  /** Siguiente código sugerido: el mayor código numérico entre las sociedades, +1. */
+  nextCodigo(): Promise<string>;
 }

@@ -55,6 +55,15 @@ export class LocalStorageSociedadRepository implements SociedadRepository {
     this.writeAll(this.readAll().filter((sociedad) => sociedad.id !== id));
   }
 
+  async nextCodigo(): Promise<string> {
+    await this.ensureSeeded();
+    const max = this.readAll().reduce((max, sociedad) => {
+      const parsed = Number.parseInt(sociedad.codigo, 10);
+      return Number.isFinite(parsed) && parsed > max ? parsed : max;
+    }, 0);
+    return String(max + 1);
+  }
+
   private ensureSeeded(): Promise<void> {
     this.seeded ??= this.seed();
     return this.seeded;
