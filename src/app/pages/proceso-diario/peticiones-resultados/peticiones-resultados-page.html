@@ -230,6 +230,10 @@
             />
           </div>
 
+          @if (avisoSociedad(); as aviso) {
+            <app-alert type="i" title="Aviso de esta sociedad">{{ aviso }}</app-alert>
+          }
+
           <div class="field">
             <label class="field__label">Procedencia <span class="field__required">*</span></label>
             <app-searchable-select
@@ -239,6 +243,10 @@
             />
           </div>
 
+          @if (avisoProcedencia(); as aviso) {
+            <app-alert type="i" title="Aviso de esta procedencia">{{ aviso }}</app-alert>
+          }
+
           <div class="field">
             <label class="field__label">Peticionario <span class="field__required">*</span></label>
             <app-searchable-select
@@ -247,6 +255,10 @@
               (valueChange)="updateDraft('peticionarioId', $event)"
             />
           </div>
+
+          @if (avisoPeticionario(); as aviso) {
+            <app-alert type="i" title="Aviso de este peticionario">{{ aviso }}</app-alert>
+          }
 
           <div class="field">
             <label class="field__label">Tipo</label>
@@ -274,6 +286,10 @@
               (valueChange)="updateDraft('destinoId', $event)"
             />
           </div>
+
+          @if (avisoDestino(); as aviso) {
+            <app-alert type="i" title="Aviso de este destino">{{ aviso }}</app-alert>
+          }
 
           <div class="field">
             <label class="field__label" for="f-comentario">Comentario Petición</label>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { ReportSummary } from '../../../reporting/models/report.model';
 import { REPORT_REPOSITORY } from '../../../reporting/services/reporting.tokens';
+import { Alert } from '../../../shared/alert/alert';
 import { Icon } from '../../../shared/icon/icon';
 import { Modal } from '../../../shared/modal/modal';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
@@ -12,6 +13,10 @@ import { PACIENTE_REPOSITORY } from '../../mantenimientos/base-pacientes/base-pa
 import { DESTINO_REPOSITORY } from '../../mantenimientos/destino-informes/destinos.tokens';
 import { GRUPO_REPOSITORY } from '../../mantenimientos/grupos-tecnicas/grupos-tecnicas.tokens';
 import { LABORATORIO_REFERENCIA_REPOSITORY } from '../../mantenimientos/laboratorios-referencia/laboratorios-referencia.tokens';
+import { Peticionario } from '../../mantenimientos/peticionarios/peticionario.model';
+import { Procedencia } from '../../mantenimientos/procedencias/procedencia.model';
+import { Sociedad } from '../../mantenimientos/sociedades/sociedad.model';
+import { Destino } from '../../mantenimientos/destino-informes/destino.model';
 import { PETICIONARIO_REPOSITORY } from '../../mantenimientos/peticionarios/peticionarios.tokens';
 import { PROCEDENCIA_REPOSITORY } from '../../mantenimientos/procedencias/procedencias.tokens';
 import { SEXO_ESPECIE_REPOSITORY } from '../../mantenimientos/sexo-especie/sexo-especie.tokens';
@@ -75,9 +80,21 @@ function computeDesviacion(tecnica: Tecnica | undefined, resultado: string | nul
   return tecnica.referencia1 != null || tecnica.referencia2 != null ? 'normal' : null;
 }
 
+/**
+ * `avisoEnPeticiones` es un texto libre en el modelo actual, pero navegadores con datos
+ * antiguos en localStorage (de cuando este campo era un booleano) pueden tener guardado
+ * `true`/`false`/`undefined` en su sitio: se ignora cualquier valor que no sea un string.
+ */
+function normalizeAviso(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  return value.trim() || null;
+}
+
 @Component({
   selector: 'app-peticiones-resultados-page',
-  imports: [FormsModule, DatePipe, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer],
+  imports: [FormsModule, DatePipe, DecimalPipe, Icon, SearchableSelect, Modal, TecnicaEditDrawer, Alert],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './peticiones-resultados-page.html',
   styleUrl: './peticiones-resultados-page.css',
@@ -135,17 +152,53 @@ export class PeticionesResultadosPage {
   });
 
   protected readonly sociedades = signal<readonly CatalogItem[]>([]);
+  /** Registros completos de sociedades (no solo id/nombre), para poder leer su aviso. */
+  protected readonly sociedadesCompletas = signal<readonly Sociedad[]>([]);
   protected readonly procedencias = signal<readonly CatalogItem[]>([]);
+  /** Registros completos de procedencias (no solo id/nombre), para poder leer su aviso. */
+  protected readonly procedenciasCompletas = signal<readonly Procedencia[]>([]);
   protected readonly peticionarios = signal<readonly CatalogItem[]>([]);
+  /** Registros completos de peticionarios (no solo id/nombre), para poder leer su aviso. */
+  protected readonly peticionariosCompletos = signal<readonly Peticionario[]>([]);
   protected readonly tiposPeticion = signal<readonly CatalogItem[]>([]);
   protected readonly estadosFacturacion = signal<readonly CatalogItem[]>([]);
   protected readonly destinos = signal<readonly CatalogItem[]>([]);
+  /** Registros completos de destinos (no solo id/nombre), para poder leer su aviso. */
+  protected readonly destinosCompletos = signal<readonly Destino[]>([]);
   protected readonly tecnicas = signal<readonly CatalogItem[]>([]);
   /** Registros completos de técnicas (no solo id/nombre), para mostrar código y tiempo de respuesta en la solicitud. */
   protected readonly tecnicasCompletas = signal<readonly Tecnica[]>([]);
   protected readonly grupos = signal<readonly CatalogItem[]>([]);
   protected readonly provincias = signal<readonly CatalogItem[]>([]);
   protected readonly sexosEspecies = signal<readonly CatalogItem[]>([]);
+
+  /** Aviso del peticionario elegido en la petición (si tiene uno configurado). */
+  protected readonly avisoPeticionario = computed(() => {
+    const id = this.draft().peticionarioId;
+    const aviso = id && this.peticionariosCompletos().find((peticionario) => peticionario.id === id)?.avisoEnPeticiones;
+    return normalizeAviso(aviso);
+  });
+
+  /** Aviso de la procedencia elegida en la petición (si tiene uno configurado). */
+  protected readonly avisoProcedencia = computed(() => {
+    const id = this.draft().procedenciaId;
+    const aviso = id && this.procedenciasCompletas().find((procedencia) => procedencia.id === id)?.avisoEnPeticiones;
+    return normalizeAviso(aviso);
+  });
+
+  /** Aviso de la sociedad elegida en la petición (si tiene uno configurado). */
+  protected readonly avisoSociedad = computed(() => {
+    const id = this.draft().sociedadId;
+    const aviso = id && this.sociedadesCompletas().find((sociedad) => sociedad.id === id)?.avisoEnPeticiones;
+    return normalizeAviso(aviso);
+  });
+
+  /** Aviso del destino elegido en la petición (si tiene uno configurado). */
+  protected readonly avisoDestino = computed(() => {
+    const id = this.draft().destinoId;
+    const aviso = id && this.destinosCompletos().find((destino) => destino.id === id)?.avisoEnPeticiones;
+    return normalizeAviso(aviso);
+  });
 
   protected readonly mesAnioActual = computed(() =>
     new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(new Date()).toUpperCase(),
@@ -641,18 +694,21 @@ export class PeticionesResultadosPage {
     ]);
 
     this.sociedades.set(sociedades.map((sociedad) => ({ id: sociedad.id, nombre: sociedad.nombre })));
+    this.sociedadesCompletas.set(sociedades);
     this.procedencias.set(
       procedencias.map((procedencia) => ({
         id: procedencia.id,
         nombre: procedencia.codigo ? `${procedencia.codigo} — ${procedencia.nombre}` : procedencia.nombre,
       })),
     );
+    this.procedenciasCompletas.set(procedencias);
     this.peticionarios.set(
       peticionarios.map((peticionario) => ({
         id: peticionario.id,
         nombre: peticionario.codigo ? `${peticionario.codigo} — ${peticionario.nombre}` : peticionario.nombre,
       })),
     );
+    this.peticionariosCompletos.set(peticionarios);
     this.tiposPeticion.set(
       tiposPeticion.map((tipo) => ({ id: tipo.id, nombre: tipo.codigo ? `${tipo.codigo} — ${tipo.nombre}` : tipo.nombre })),
     );
@@ -663,6 +719,7 @@ export class PeticionesResultadosPage {
         nombre: destino.codigo ? `${destino.codigo} — ${destino.descripcion}` : destino.descripcion,
       })),
     );
+    this.destinosCompletos.set(destinos);
     this.tecnicas.set(
       tecnicas.map((tecnica) => ({ id: tecnica.id, nombre: tecnica.codigo ? `${tecnica.codigo} — ${tecnica.nombre}` : tecnica.nombre })),
     );
