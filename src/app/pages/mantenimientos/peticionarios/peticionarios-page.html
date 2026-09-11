@@ -24,17 +24,11 @@
       <input
         class="input"
         type="text"
-        placeholder="Buscar por nombre, colegiado o email…"
+        placeholder="Buscar por nombre o nº colegiado…"
         [ngModel]="search()"
         (ngModelChange)="search.set($event)"
       />
     </label>
-
-    <select class="select toolbar__filter" [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event)">
-      <option value="todos">Todos los estados</option>
-      <option value="activo">Activo</option>
-      <option value="inactivo">Inactivo</option>
-    </select>
 
     <span class="toolbar__spacer"></span>
     <span class="toolbar__count">{{ filtered().length }} resultados</span>
@@ -63,13 +57,8 @@
               <app-icon name="arrow-up-down" [size]="12" />
             </button>
           </th>
-          <th scope="col">Contacto</th>
-          <th scope="col" [class.is-sorted]="sortColumn() === 'estado'">
-            <button type="button" class="th-sort" (click)="toggleSort('estado')">
-              Estado
-              <app-icon name="arrow-up-down" [size]="12" />
-            </button>
-          </th>
+          <th scope="col">Teléfono</th>
+          <th scope="col">Población</th>
           <th scope="col" class="is-num">Acciones</th>
         </tr>
       </thead>
@@ -81,11 +70,7 @@
             <td class="cell-muted">{{ row.colegiado }}</td>
             <td>{{ row.especialidad }}</td>
             <td class="cell-muted">{{ row.telefono }}</td>
-            <td>
-              <span class="badge" [class.badge--success]="row.estado === 'activo'" [class.badge--neutral]="row.estado === 'inactivo'">
-                {{ row.estado === 'activo' ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
+            <td class="cell-muted">{{ row.poblacion || '—' }}</td>
             <td class="is-num">
               @if (confirmDeleteId() === row.id) {
                 <div class="row-confirm">
@@ -134,6 +119,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar peticionario' : 'Nuevo peticionario'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-codigo">Código</label>
@@ -191,7 +177,7 @@
       </div>
     </div>
 
-    <div class="drawer-form__row">
+    <div class="drawer-form__row drawer-form__row--3col">
       <div class="field">
         <label class="field__label" for="f-telefono">Teléfono</label>
         <input
@@ -204,39 +190,100 @@
         />
       </div>
       <div class="field">
-        <label class="field__label" for="f-email">Email</label>
+        <label class="field__label" for="f-movil">Móvil</label>
         <input
-          id="f-email"
+          id="f-movil"
           class="input"
-          type="email"
-          [ngModel]="draft().email"
-          (ngModelChange)="updateDraft('email', $event)"
-          name="email"
+          type="text"
+          [ngModel]="draft().movil"
+          (ngModelChange)="updateDraft('movil', $event)"
+          name="movil"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-fax">Fax</label>
+        <input
+          id="f-fax"
+          class="input"
+          type="text"
+          [ngModel]="draft().fax"
+          (ngModelChange)="updateDraft('fax', $event)"
+          name="fax"
         />
       </div>
     </div>
 
     <div class="field">
-      <label class="field__label" for="f-estado">Estado</label>
-      <select
-        id="f-estado"
-        class="select"
-        [ngModel]="draft().estado"
-        (ngModelChange)="updateDraft('estado', $event)"
-        name="estado"
-      >
-        <option value="activo">Activo</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
+      <label class="field__label" for="f-domicilio">Domicilio</label>
+      <input
+        id="f-domicilio"
+        class="input"
+        type="text"
+        [ngModel]="draft().domicilio"
+        (ngModelChange)="updateDraft('domicilio', $event)"
+        name="domicilio"
+      />
+    </div>
+
+    <div class="drawer-form__row">
+      <div class="field">
+        <label class="field__label" for="f-poblacion">Población</label>
+        <input
+          id="f-poblacion"
+          class="input"
+          type="text"
+          [ngModel]="draft().poblacion"
+          (ngModelChange)="updateDraft('poblacion', $event)"
+          name="poblacion"
+        />
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-cp">CP</label>
+        <input
+          id="f-cp"
+          class="input"
+          type="text"
+          [ngModel]="draft().cp"
+          (ngModelChange)="updateDraft('cp', $event)"
+          name="cp"
+        />
+      </div>
     </div>
 
     <div class="field">
-      <label class="field__label" for="f-notas">Notas</label>
-      <textarea id="f-notas" class="textarea" name="notas" placeholder="Observaciones internas…"></textarea>
+      <label class="field__label">Provincia</label>
+      <app-searchable-select
+        [items]="provincias()"
+        [value]="draft().provinciaId"
+        (valueChange)="updateDraft('provinciaId', $event)"
+      />
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-aviso">Aviso en peticiones</label>
+      <textarea
+        id="f-aviso"
+        class="textarea"
+        [ngModel]="draft().avisoEnPeticiones"
+        (ngModelChange)="updateDraft('avisoEnPeticiones', $event)"
+        name="avisoEnPeticiones"
+        placeholder="Texto que se muestra con un icono de aviso al elegir este peticionario en una petición…"
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="f-observaciones">Observaciones</label>
+      <textarea
+        id="f-observaciones"
+        class="textarea"
+        [ngModel]="draft().observaciones"
+        (ngModelChange)="updateDraft('observaciones', $event)"
+        name="observaciones"
+      ></textarea>
     </div>
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasAdvanced]="false" (cancelled)="closeDrawer()" (saved)="save()" />
   </div>
 </app-drawer>

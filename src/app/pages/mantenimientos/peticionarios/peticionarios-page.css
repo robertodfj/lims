@@ -13,3 +13,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+
+.drawer-form__row--3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}

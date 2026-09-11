@@ -16,9 +16,11 @@ import { AdvancedSettingsButton } from '../advanced-settings-button/advanced-set
   imports: [AdvancedSettingsButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-advanced-settings-button variant="labeled" [hasCustomContent]="hasCustomAdvanced()">
-      <ng-content />
-    </app-advanced-settings-button>
+    @if (hasAdvanced()) {
+      <app-advanced-settings-button variant="labeled" [hasCustomContent]="hasCustomAdvanced()">
+        <ng-content />
+      </app-advanced-settings-button>
+    }
     <button type="button" class="btn btn--secondary" (click)="cancelled.emit()">Cancelar</button>
     <button type="button" class="btn btn--primary" [disabled]="saving()" (click)="saved.emit()">
       {{ saving() ? 'Guardando…' : 'Guardar' }}
@@ -32,6 +34,8 @@ import { AdvancedSettingsButton } from '../advanced-settings-button/advanced-set
 })
 export class DrawerFormFooter {
   readonly saving = input(false);
+  /** False en entidades que de verdad no tienen configuración avanzada (p. ej. Peticionarios, Procedencias). */
+  readonly hasAdvanced = input(true);
   /** True cuando el llamante proyecta contenido propio dentro del botón "Avanzado" (p. ej. Técnicas). */
   readonly hasCustomAdvanced = input(false);
   readonly cancelled = output<void>();

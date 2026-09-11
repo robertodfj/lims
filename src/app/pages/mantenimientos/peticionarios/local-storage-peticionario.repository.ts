@@ -57,13 +57,11 @@ export class LocalStoragePeticionarioRepository implements PeticionarioRepositor
 
   async nextCodigo(): Promise<string> {
     await this.ensureSeeded();
-    const maxActivo = this.readAll()
-      .filter((peticionario) => peticionario.estado === 'activo')
-      .reduce((max, peticionario) => {
-        const parsed = Number.parseInt(peticionario.codigo, 10);
-        return Number.isFinite(parsed) && parsed > max ? parsed : max;
-      }, 0);
-    return String(maxActivo + 1);
+    const max = this.readAll().reduce((max, peticionario) => {
+      const parsed = Number.parseInt(peticionario.codigo, 10);
+      return Number.isFinite(parsed) && parsed > max ? parsed : max;
+    }, 0);
+    return String(max + 1);
   }
 
   private ensureSeeded(): Promise<void> {
