@@ -21,7 +21,9 @@ export type IconName =
   | 'inbox'
   | 'sparkle'
   | 'send'
-  | 'code';
+  | 'code'
+  | 'printer'
+  | 'arrow-left';
 
 /** Set mínimo de iconos de línea (20x20, trazo 1.6) usado en toda la app. */
 @Component({
@@ -130,6 +132,15 @@ export type IconName =
         @case ('code') {
           <path d="M7 6L2.5 10 7 14" />
           <path d="M13 6l4.5 4-4.5 4" />
+        }
+        @case ('printer') {
+          <path d="M6 8V3.5h8V8" />
+          <rect x="3.5" y="8" width="13" height="6.5" rx="1.2" />
+          <path d="M6 12.5h8V17H6v-4.5z" />
+          <circle cx="14" cy="10.3" r="0.6" fill="currentColor" stroke="none" />
+        }
+        @case ('arrow-left') {
+          <path d="M16 10H4M4 10l5-5M4 10l5 5" />
         }
       }
     </svg>
