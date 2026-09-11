@@ -3,6 +3,14 @@ import { AppLayout } from './layout/app-layout/app-layout';
 
 export const routes: Routes = [
   {
+    // Ruta de nivel superior (fuera de AppLayout) a propósito: se abre en una pestaña nueva
+    // desde el botón "Imprimir" de una petición y debe verse como una página de impresión
+    // limpia, sin el menú lateral ni el resto del chrome de la aplicación.
+    path: 'imprimir/:reportId/:peticionId',
+    title: 'Imprimir informe',
+    loadComponent: () => import('./reporting/pages/report-print/report-print-page').then((m) => m.ReportPrintPage),
+  },
+  {
     path: '',
     component: AppLayout,
     children: [

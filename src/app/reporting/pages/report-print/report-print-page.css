@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #eceef1;
+}
+
+.report-print__status {
+  padding: 40px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary, #5c616e);
+}
+
+.report-print__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e3e5ea;
+}
+
+.report-print__hint {
+  font-size: 12.5px;
+  color: var(--text-tertiary, #8a8f99);
+}
+
+.report-print__preview {
+  /* Fondo gris tipo "mesa" con la hoja centrada encima: se ve de un vistazo cómo va a
+     quedar impreso, en vez de un iframe a todo lo ancho pegado a los bordes. */
+  padding: 40px 24px 64px;
+}
+
+/* Envuelve el punto de montaje del iframe y la capa de "fin de página": position:relative
+   para que esa capa se pueda anclar exactamente sobre el folio, y max-width/margin:auto aquí
+   (no en el iframe) para centrar de forma fiable independientemente de qué mida el iframe.
+   El aspecto de "papel" (fondo blanco + sombra) vive aquí, no en el iframe: así el
+   min-height (que solo estira este envoltorio para que en pantalla se vea un folio entero,
+   ver sheetMinHeight en el .ts) no afecta a la altura real del iframe, que es la que se
+   imprime — si lo estirara también a él, se imprimiría una página en blanco de más. */
+.report-print__sheet-wrap {
+  position: relative;
+  max-width: 830px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 8%),
+    0 12px 28px rgb(0 0 0 / 14%);
+}
+
+/* El <iframe> del sandbox lo inserta Vue en tiempo de ejecución, fuera del árbol que Angular
+   conoce en tiempo de compilación: ::ng-deep es la única forma de alcanzarlo desde aquí.
+   La altura real la fija report-print-page.ts en cuanto el informe termina de renderizar
+   dentro (ver startAutoHeight): es siempre la altura real del contenido, sin redondear —
+   redondearla aquí metería espacio en blanco "de mentira" que el navegador imprimiría como
+   una página de más. min-height es solo el valor de arranque mientras el informe carga. */
+.report-print__sheet-wrap ::ng-deep iframe {
+  display: block;
+  width: 100%;
+  min-height: 400px;
+  border: none;
+  background: #fff;
+}
+
+/* Aviso visual (solo en pantalla) de dónde caerá cada corte de página: una aproximación —
+   el punto exacto en el PDF final depende del tamaño de papel elegido al imprimir — pero da
+   una idea clara de cuántos folios ocupa el informe antes de imprimir. */
+.report-print__page-breaks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.report-print__page-break {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed #a8adb8;
+}
+
+.report-print__page-break span {
+  position: absolute;
+  top: 3px;
+  right: 0;
+  font-size: 10px;
+  color: #767c88;
+  background: #fff;
+  padding: 1px 6px;
+  border-radius: 0 0 0 4px;
+}
+
+@media print {
+  /* Márgenes de página consistentes entre navegadores/impresoras, en vez de depender del
+     valor por defecto de cada uno (que puede variar y descuadrar el centrado). */
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  :host {
+    background: #fff;
+    min-height: 0;
+  }
+
+  .report-print__preview {
+    padding: 0;
+  }
+
+  /* El !important es necesario: gana a min-height inline que pone sheetMinHeight() para el
+     efecto "folio entero" en pantalla. Al imprimir NO debe aplicarse, o esa altura extra "de
+     mentira" se paginaría como si fuera contenido real y saldría una página en blanco de más. */
+  .report-print__sheet-wrap {
+    min-height: auto !important;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

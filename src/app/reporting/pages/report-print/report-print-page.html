@@ -1,0 +1,31 @@
+@if (loading()) {
+  <p class="report-print__status">Generando el informe…</p>
+} @else if (notFound()) {
+  <p class="report-print__status">
+    No se ha podido generar el informe: la petición o el modelo indicado ya no existe.
+  </p>
+} @else {
+  <div class="report-print__toolbar no-print">
+    <button type="button" class="btn btn--primary" (click)="imprimir()">
+      <app-icon name="printer" [size]="14" />
+      Imprimir
+    </button>
+    <span class="report-print__hint">Usa "Guardar como PDF" en el diálogo de impresión para exportarlo.</span>
+  </div>
+
+  <div class="report-print__preview">
+    <div class="report-print__sheet-wrap" [style.minHeight.px]="sheetMinHeight()">
+      <div class="report-print__sheet" #previewMount></div>
+
+      @if (pageCount() > 1) {
+        <div class="report-print__page-breaks no-print" aria-hidden="true">
+          @for (offset of pageBreaks(); track offset; let i = $index) {
+            <div class="report-print__page-break" [style.top.px]="offset">
+              <span>Fin de página {{ i + 1 }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
