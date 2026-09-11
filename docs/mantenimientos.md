@@ -26,10 +26,12 @@ una pantalla, no solo su tipo de dato.
 > El botón "Avanzado" también existe en **Sociedades** (config. de
 > facturación) y **Destino de informes** (correo/exportación/modelo de
 > informe/condición) — solo visual en los dos. En **Soportes** (contenedores
-> admitidos) y **Contenedores** (destinos preanalíticos admitidos, con
-> prioridad) sí es funcional: ambas pestañas guardan de verdad la
-> asociación. **Peticionarios**, **Procedencias** y **Tipos de petición** no
-> tienen "Avanzado" porque no existe en el sistema original.
+> admitidos), **Contenedores** (destinos preanalíticos admitidos, con
+> prioridad), **Comentarios** (técnicas vinculadas) y **Laboratorios de
+> referencia** (técnicas asociadas, color, y valores de equivalencia/precio
+> por técnica) sí es funcional: guardan de verdad la asociación.
+> **Peticionarios**, **Procedencias** y **Tipos de petición** no tienen
+> "Avanzado" porque no existe en el sistema original.
 
 ---
 
@@ -405,6 +407,16 @@ resultado, etc.), para no tener que redactarlos cada vez a mano.
   (variables que el sistema sustituye automáticamente al generar el
   informe, p. ej. nombre del paciente, fecha, valores de resultado, etc.).
 
+### Avanzado — Técnicas vinculadas
+
+Indica a qué técnicas se puede vincular este comentario, con dos listas
+(Disponibles / Técnicas vinculadas) y botones para mover una a otra. Luego,
+al introducir un comentario en un resultado (pestaña Resultados de una
+Petición), si la técnica de esa línea tiene comentarios vinculados solo se
+ofrecen esos por defecto (pestaña "Asociados"); la pestaña "Todos" da acceso
+al resto de comentarios creados. Un comentario sin ninguna técnica vinculada
+es genérico: no aparece en "Asociados" de ninguna técnica, solo en "Todos".
+
 ---
 
 ## Laboratorios de referencia (Laboratorios Externos)
@@ -429,6 +441,34 @@ resultado.
 - **Listado de pruebas**: relación de las pruebas (técnicas) que este
   laboratorio de referencia realiza, para poder derivarlas desde el propio
   sistema.
+
+### Avanzado — Técnicas, color y programa asociado
+
+- **Color asociado**: identifica visualmente el laboratorio en su propio
+  listado (un punto de color junto al código) y, más importante, en el
+  código de la técnica dentro de la ventana de Resultados de una Petición.
+- **Programa asociado**: nombre de la aplicación con la que, mediante un
+  desarrollo adicional, se interconectaría este laboratorio (p. ej. envío
+  automático de resultados). Puramente informativo: no existe hoy una
+  integración real que lo use.
+- **Envío de resultados** *(sección plegable, solo informativa)*: documenta
+  las dos formas de mandar resultados a este laboratorio — por el Programa
+  Asociado, o mediante el botón de exportar de Peticiones y Resultados.
+  Ninguna tiene una integración real conectada.
+- **Técnicas** (Disponibles / Técnicas asociadas): a diferencia del resto de
+  entidades con este patrón de doble lista, aquí NO se guarda un array
+  propio del laboratorio — `laboratorioExternoId` ya es un campo de la
+  propia Técnica (usado también en la columna "Laboratorio de referencia"
+  de Resultados), así que asociar/quitar aquí escribe directamente en la
+  técnica y se guarda al instante, sin depender de pulsar "Guardar" en el
+  laboratorio. Es exactamente la misma relación que el desplegable
+  "Laboratorio Externo" de la propia ficha de la técnica: cambiarla desde
+  cualquiera de los dos sitios se refleja en el otro.
+- **Valores** (por técnica asociada, botón "€"): equivalencia y condiciones
+  de esa técnica para este laboratorio externo — **Código Laboratorio**
+  (el que la prueba tiene en el laboratorio de referencia), **Precio** (lo
+  que cuesta realizarla allí) e **Incidencias** (requisitos de envío de la
+  muestra). También se guarda al instante en la técnica.
 
 ---
 
