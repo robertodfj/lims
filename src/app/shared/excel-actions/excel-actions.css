@@ -1,0 +1,73 @@
+:host {
+  display: contents;
+}
+
+.excel-icon {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Zona de arrastrar/soltar archivo
+   ========================================================================== */
+
+.excel-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 20px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  text-align: center;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+
+.excel-drop.is-dragover {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.excel-icon--lg {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+}
+
+.excel-drop__text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.excel-drop__browse {
+  position: relative;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.excel-drop__browse input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.excel-drop__hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin: 4px 0 0;
+}
+
+.excel-drop__filename {
+  margin: 6px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
