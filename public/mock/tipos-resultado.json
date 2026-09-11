@@ -1,6 +1,8 @@
 [
-  { "id": "num", "nombre": "Numérico" },
-  { "id": "alfanum", "nombre": "Alfanumérico" },
-  { "id": "pos-neg", "nombre": "Positivo / Negativo" },
-  { "id": "texto-libre", "nombre": "Texto libre" }
+  { "id": "numerico", "nombre": "Numérico" },
+  { "id": "texto-libre", "nombre": "Texto Libre" },
+  { "id": "alfabetico", "nombre": "Alfabético" },
+  { "id": "calculado", "nombre": "Calculado" },
+  { "id": "agrupacion-pruebas", "nombre": "Agrupación de pruebas" },
+  { "id": "microbiologia", "nombre": "Microbiología" }
 ]

@@ -1,0 +1,371 @@
+<p class="avz__intro">
+  Según el tipo de resultado de la técnica, defina aquí rangos de referencia, redondeos
+  decimales, interpretación de resultados, y asocie comentarios, técnicas, resultados
+  alfabéticos o artículos.
+</p>
+
+<div class="avz-tabs">
+  <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'rangos'" (click)="setTab('rangos')">
+    Rangos de referencia
+  </button>
+  <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'extendida'" (click)="setTab('extendida')">
+    Texto referencia extendida
+  </button>
+  <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'decimales'" (click)="setTab('decimales')">
+    Decimales
+  </button>
+  <button
+    type="button"
+    class="avz-tabs__tab"
+    [class.is-active]="activeTab() === 'interpretacion'"
+    (click)="setTab('interpretacion')"
+  >
+    Interpretación resultado
+  </button>
+  <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'comentarios'" (click)="setTab('comentarios')">
+    Comentarios
+  </button>
+  @if (mostrarAgrupaciones()) {
+    <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'agrupaciones'" (click)="setTab('agrupaciones')">
+      Agrupaciones
+    </button>
+  }
+  @if (mostrarAlfabeticos()) {
+    <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'alfabeticos'" (click)="setTab('alfabeticos')">
+      Resultados alfabéticos
+    </button>
+  }
+  @if (mostrarFormula()) {
+    <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'formula'" (click)="setTab('formula')">
+      Fórmula
+    </button>
+  }
+  <button type="button" class="avz-tabs__tab" [class.is-active]="activeTab() === 'articulos'" (click)="setTab('articulos')">
+    Artículos
+  </button>
+</div>
+
+@if (activeTab() === 'rangos') {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">
+      Valores de referencia según grupo fisiológico, edad, sexo o especie. Puede definir tantos rangos como
+      necesite; las fechas de validez permiten cerrar uno y abrir otro cuando cambie algún parámetro.
+    </p>
+
+    <div class="table-wrap avz-table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Diagnóstico</th>
+            <th scope="col">Sexo / Especie</th>
+            <th scope="col">Edad</th>
+            <th scope="col">Referencia</th>
+            <th scope="col">Alarma</th>
+            <th scope="col">Pánico</th>
+            <th scope="col">Validez</th>
+            <th scope="col">Ref. validación inicial</th>
+            <th scope="col">Texto</th>
+            <th scope="col">Delta Check</th>
+            <th scope="col" class="is-num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="input avz-input--sm" type="text" placeholder="p. ej. Adulto sano" /></td>
+            <td>
+              <app-searchable-select [items]="sexosEspecies()" [value]="null" placeholder="Cualquiera" />
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="desde" />
+                <input class="input avz-input--xs" type="number" placeholder="hasta" />
+              </div>
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="desde" />
+                <input class="input avz-input--xs" type="number" placeholder="hasta" />
+              </div>
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="desde" />
+                <input class="input avz-input--xs" type="number" placeholder="hasta" />
+              </div>
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="desde" />
+                <input class="input avz-input--xs" type="number" placeholder="hasta" />
+              </div>
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="date" />
+                <input class="input avz-input--xs" type="date" />
+              </div>
+            </td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="desde" />
+                <input class="input avz-input--xs" type="number" placeholder="hasta" />
+              </div>
+            </td>
+            <td><input class="input avz-input--sm" type="text" placeholder="Texto a mostrar" /></td>
+            <td>
+              <div class="avz-range">
+                <input class="input avz-input--xs" type="number" placeholder="%" />
+                <input class="input avz-input--xs" type="number" placeholder="días" />
+              </div>
+            </td>
+            <td class="is-num">
+              <button type="button" class="btn btn--danger-ghost btn--icon btn--sm" disabled aria-label="Quitar rango">
+                <span aria-hidden="true">×</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button type="button" class="btn btn--secondary btn--sm avz-panel__add" disabled title="Pendiente de implementar">
+      + Nuevo rango
+    </button>
+  </div>
+}
+
+@if (activeTab() === 'extendida') {
+  <div class="avz-panel">
+    <label class="checkbox-field">
+      <input type="checkbox" />
+      Ocultar (Ref1 - Ref2)
+    </label>
+    <p class="avz-panel__desc">
+      Al activarlo se ocultan en el informe los valores de referencia generales configurados en la técnica.
+    </p>
+
+    <div class="field">
+      <label class="field__label" for="f-avz-textoExtendida">Texto</label>
+      <input id="f-avz-textoExtendida" class="input" type="text" placeholder="Texto que sustituye a la referencia general" />
+      <span class="field__hint">
+        Se muestra en la columna de referencia extendida, sustituyendo al general si "Ocultar" está activado.
+      </span>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'decimales') {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">
+      Hasta 7 intervalos con un redondeo decimal distinto cada uno, en función del resultado obtenido.
+    </p>
+
+    <div class="table-wrap avz-table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="is-num">Nº</th>
+            <th scope="col">Condición activa</th>
+            <th scope="col">Referencia inicial</th>
+            <th scope="col">Referencia final</th>
+            <th scope="col">Decimales</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (numero of numerosDel1Al7; track numero) {
+            <tr>
+              <td class="cell-muted">{{ numero }}</td>
+              <td><input type="checkbox" /></td>
+              <td><input class="input avz-input--xs" type="number" /></td>
+              <td><input class="input avz-input--xs" type="number" /></td>
+              <td><input class="input avz-input--xs" type="number" min="0" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'interpretacion') {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">
+      Hasta 7 interpretaciones: un texto que aparece en el informe cuando el resultado cae dentro del intervalo
+      indicado.
+    </p>
+
+    <div class="table-wrap avz-table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="is-num">Nº</th>
+            <th scope="col">Ocultar numérico</th>
+            <th scope="col">Referencia 1</th>
+            <th scope="col">Referencia 2</th>
+            <th scope="col">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (numero of numerosDel1Al7; track numero) {
+            <tr>
+              <td class="cell-muted">{{ numero }}</td>
+              <td><input type="checkbox" /></td>
+              <td><input class="input avz-input--xs" type="number" /></td>
+              <td><input class="input avz-input--xs" type="number" /></td>
+              <td><input class="input" type="text" placeholder="Texto de interpretación" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'comentarios') {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">Comentarios vinculados a la técnica.</p>
+    <div class="avz-dual">
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Disponibles</h4>
+        <ul class="avz-dual__list">
+          @for (comentario of comentarios(); track comentario.id) {
+            <li class="avz-dual__item">
+              <span>{{ comentario.nombre }}</span>
+              <button type="button" class="btn btn--ghost btn--icon btn--sm" disabled aria-label="Añadir">+</button>
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">No hay comentarios dados de alta todavía.</li>
+          }
+        </ul>
+      </div>
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Vinculados a esta técnica</h4>
+        <ul class="avz-dual__list">
+          <li class="avz-dual__empty">Ningún comentario vinculado todavía.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'agrupaciones' && mostrarAgrupaciones()) {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">
+      Técnicas que forman parte de esta Agrupación de pruebas. Al añadir esta técnica a una
+      petición, se añadirán automáticamente también todas las incluidas aquí.
+    </p>
+    <div class="avz-dual">
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Disponibles</h4>
+        <ul class="avz-dual__list">
+          @for (tecnica of tecnicasDisponibles(); track tecnica.id) {
+            <li class="avz-dual__item">
+              <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--icon btn--sm"
+                (click)="agregarAgrupada(tecnica.id)"
+                aria-label="Añadir"
+              >
+                +
+              </button>
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">No hay más técnicas disponibles para añadir.</li>
+          }
+        </ul>
+      </div>
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Incluidas en la agrupación</h4>
+        <ul class="avz-dual__list">
+          @for (tecnica of tecnicasIncluidas(); track tecnica.id) {
+            <li class="avz-dual__item">
+              <span>{{ tecnica.codigo }} — {{ tecnica.nombre }}</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--icon btn--sm"
+                (click)="quitarAgrupada(tecnica.id)"
+                aria-label="Quitar"
+              >
+                ×
+              </button>
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">Ninguna técnica añadida todavía.</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'alfabeticos' && mostrarAlfabeticos()) {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">Resultados alfabéticos vinculados a la técnica.</p>
+    <div class="avz-dual">
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Disponibles</h4>
+        <ul class="avz-dual__list">
+          @for (resultado of resultadosAlfabeticos(); track resultado.id) {
+            <li class="avz-dual__item">
+              <span>{{ resultado.codigo }} — {{ resultado.texto }}</span>
+              <button type="button" class="btn btn--ghost btn--icon btn--sm" disabled aria-label="Añadir">+</button>
+            </li>
+          } @empty {
+            <li class="avz-dual__empty">No hay resultados alfabéticos dados de alta todavía.</li>
+          }
+        </ul>
+      </div>
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Vinculados a esta técnica</h4>
+        <ul class="avz-dual__list">
+          <li class="avz-dual__empty">Ningún resultado vinculado todavía.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+}
+
+@if (activeTab() === 'formula' && mostrarFormula()) {
+  <div class="avz-panel">
+    <div class="field">
+      <label class="field__label" for="f-avz-formula">Fórmula</label>
+      <textarea id="f-avz-formula" class="textarea avz-formula" placeholder="p. ej. [4]-([2]+[3])"></textarea>
+    </div>
+
+    <ul class="avz-formula-legend">
+      <li><strong>Constantes:</strong> números con o sin decimales, y paréntesis.</li>
+      <li><strong>Operadores:</strong> producto (*), suma (+), resta (-), división (/), potencia (^).</li>
+      <li><strong>Pruebas:</strong> escriba el código de la técnica entre corchetes.</li>
+      <li><strong>Funciones:</strong> matemáticas (log(), abs(), sin()...) y lógicas (iff(&lt;condición&gt;;valorSi;valorNo)).</li>
+    </ul>
+
+    <button type="button" class="btn btn--secondary btn--sm avz-panel__add" disabled title="Pendiente de implementar">
+      Comprobar
+    </button>
+  </div>
+}
+
+@if (activeTab() === 'articulos') {
+  <div class="avz-panel">
+    <p class="avz-panel__desc">Artículos que se consumen al realizar esta técnica.</p>
+    <div class="avz-dual">
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Disponibles</h4>
+        <ul class="avz-dual__list">
+          <li class="avz-dual__empty">Mantenimiento de Artículos pendiente de crear.</li>
+        </ul>
+      </div>
+      <div class="avz-dual__col">
+        <h4 class="avz-dual__title">Vinculados a esta técnica</h4>
+        <ul class="avz-dual__list">
+          <li class="avz-dual__empty">Ningún artículo vinculado todavía.</li>
+        </ul>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn--secondary btn--sm avz-panel__add" disabled title="Pendiente de implementar">
+      Consumos
+    </button>
+  </div>
+}

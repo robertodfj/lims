@@ -1,0 +1,502 @@
+<app-drawer [open]="open()" size="xl" [title]="tecnica() ? 'Editar técnica' : 'Nueva técnica'" (closed)="requestClose()">
+  <form class="tecnica-form" (ngSubmit)="save()">
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Identificación</h3>
+      <div class="field">
+        <label class="field__label" for="f-codigo">ID / Código</label>
+        <div class="field-with-action">
+          <input
+            id="f-codigo"
+            class="input"
+            type="text"
+            [ngModel]="draft().codigo"
+            (ngModelChange)="updateDraft('codigo', $event)"
+            name="codigo"
+          />
+          <button type="button" class="btn btn--secondary btn--sm" [disabled]="generatingCodigo()" (click)="generateCodigo()">
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nombre">Nombre</label>
+        <input
+          id="f-nombre"
+          class="input"
+          type="text"
+          required
+          maxlength="180"
+          [ngModel]="draft().nombre"
+          (ngModelChange)="updateDraft('nombre', $event)"
+          name="nombre"
+        />
+        <span class="field__hint">{{ draft().nombre.length }} / 180</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-nombreInforme">Nombre en informe</label>
+        <input
+          id="f-nombreInforme"
+          class="input"
+          type="text"
+          maxlength="180"
+          [ngModel]="draft().nombreInforme"
+          (ngModelChange)="updateDraft('nombreInforme', $event)"
+          name="nombreInforme"
+        />
+        <span class="field__hint">{{ draft().nombreInforme.length }} / 180</span>
+        <span class="field__hint">Sustituye al Nombre en el Informe de Resultados.</span>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Clasificación</h3>
+      <p class="tecnica-form__note">
+        Una prueba sin Grupo ni Subgrupo no aparecerá en el informe, aunque sí será facturada.
+      </p>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Grupo <span class="field__required">*</span></label>
+          <app-searchable-select
+            [items]="grupos()"
+            [value]="draft().grupoId"
+            (valueChange)="updateDraft('grupoId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Subgrupo</label>
+          <app-searchable-select
+            [items]="subgrupos()"
+            [value]="draft().subgrupoId"
+            (valueChange)="updateDraft('subgrupoId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Tipo de resultado <span class="field__required">*</span></label>
+        <app-searchable-select
+          [items]="tiposResultado()"
+          [value]="draft().tipoResultadoId"
+          (valueChange)="updateDraft('tipoResultadoId', $event)"
+        />
+        <span class="field__hint">
+          Numérico, Texto Libre, Alfabético (valores del Mantenimiento de Resultados Alfabéticos), Calculado
+          (fórmula), Agrupación de pruebas o Microbiología. La fórmula y las pruebas agrupadas se configuran desde
+          "Avanzado".
+        </span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-numDecimales">Nº decimales</label>
+          <input
+            id="f-numDecimales"
+            class="input"
+            type="number"
+            min="0"
+            [ngModel]="draft().numDecimales"
+            (ngModelChange)="updateDraft('numDecimales', $event)"
+            name="numDecimales"
+          />
+          <span class="field__hint">Solo aplica a resultados de tipo Numérico.</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-numLineas">Nº de líneas</label>
+          <input
+            id="f-numLineas"
+            class="input"
+            type="number"
+            min="1"
+            max="9"
+            [ngModel]="draft().numLineas"
+            (ngModelChange)="updateDraft('numLineas', $event)"
+            name="numLineas"
+          />
+          <span class="field__hint">Solo Texto Libre y Microbiología. Máximo 9.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Unidades y valores de referencia</h3>
+      <p class="tecnica-form__note">
+        Es aconsejable rellenar los valores de referencia, aunque su uso no es obligatorio: las pruebas sin
+        referencia aparecen señaladas con otro color en Introducción de Resultados.
+      </p>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-unidad1">Unidad 1</label>
+          <input
+            id="f-unidad1"
+            class="input"
+            type="text"
+            maxlength="20"
+            [ngModel]="draft().unidad1"
+            (ngModelChange)="updateDraft('unidad1', $event)"
+            name="unidad1"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-unidad2">Unidad 2</label>
+          <input
+            id="f-unidad2"
+            class="input"
+            type="text"
+            maxlength="20"
+            [ngModel]="draft().unidad2"
+            (ngModelChange)="updateDraft('unidad2', $event)"
+            name="unidad2"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-factorConversion">Factor conversión</label>
+        <input
+          id="f-factorConversion"
+          class="input"
+          type="number"
+          step="any"
+          [ngModel]="draft().factorConversion"
+          (ngModelChange)="updateDraft('factorConversion', $event)"
+          name="factorConversion"
+        />
+        <span class="field__hint">Factor que convierte la Unidad 1 en la Unidad 2.</span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-referencia1">Referencia 1 (límite inferior)</label>
+          <input
+            id="f-referencia1"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().referencia1"
+            (ngModelChange)="updateDraft('referencia1', $event)"
+            name="referencia1"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-referencia2">Referencia 2 (límite superior)</label>
+          <input
+            id="f-referencia2"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().referencia2"
+            (ngModelChange)="updateDraft('referencia2', $event)"
+            name="referencia2"
+          />
+        </div>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-alarma1">Alarma 1 (límite inferior)</label>
+          <input
+            id="f-alarma1"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().alarma1"
+            (ngModelChange)="updateDraft('alarma1', $event)"
+            name="alarma1"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-alarma2">Alarma 2 (límite superior)</label>
+          <input
+            id="f-alarma2"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().alarma2"
+            (ngModelChange)="updateDraft('alarma2', $event)"
+            name="alarma2"
+          />
+        </div>
+      </div>
+      <p class="field__hint">A partir de estos límites, el sistema pide confirmación antes de grabar el resultado.</p>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-panico1">Pánico 1 (límite inferior)</label>
+          <input
+            id="f-panico1"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().panico1"
+            (ngModelChange)="updateDraft('panico1', $event)"
+            name="panico1"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-panico2">Pánico 2 (límite superior)</label>
+          <input
+            id="f-panico2"
+            class="input"
+            type="number"
+            step="any"
+            [ngModel]="draft().panico2"
+            (ngModelChange)="updateDraft('panico2', $event)"
+            name="panico2"
+          />
+        </div>
+      </div>
+      <p class="field__hint">Fuera de estos límites, el resultado se considera imposible y no se permite introducir.</p>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-deltaCheckPorcentaje">Delta Check (%)</label>
+          <input
+            id="f-deltaCheckPorcentaje"
+            class="input"
+            type="number"
+            step="any"
+            min="0"
+            [ngModel]="draft().deltaCheckPorcentaje"
+            (ngModelChange)="updateDraft('deltaCheckPorcentaje', $event)"
+            name="deltaCheckPorcentaje"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-deltaCheckDias">Delta Check (días válidos)</label>
+          <input
+            id="f-deltaCheckDias"
+            class="input"
+            type="number"
+            min="0"
+            [ngModel]="draft().deltaCheckDias"
+            (ngModelChange)="updateDraft('deltaCheckDias', $event)"
+            name="deltaCheckDias"
+          />
+        </div>
+      </div>
+      <p class="field__hint">
+        % de variación admitido respecto al último resultado; si se supera, se marca en la pantalla de resultados.
+        Los días acotan cuánto tiempo atrás se tiene en cuenta ese resultado anterior.
+      </p>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Presentación</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-ordenImpresion">Orden de impresión</label>
+          <input
+            id="f-ordenImpresion"
+            class="input"
+            type="number"
+            min="0"
+            [ngModel]="draft().ordenImpresion"
+            (ngModelChange)="updateDraft('ordenImpresion', $event)"
+            name="ordenImpresion"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-tiempoRespuesta">Tiempo de respuesta</label>
+          <input
+            id="f-tiempoRespuesta"
+            class="input"
+            type="text"
+            maxlength="20"
+            placeholder="p. ej. 2 DIAS"
+            [ngModel]="draft().tiempoRespuesta"
+            (ngModelChange)="updateDraft('tiempoRespuesta', $event)"
+            name="tiempoRespuesta"
+          />
+          <span class="field__hint">{{ draft().tiempoRespuesta.length }} / 20</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-valorPorDefecto">Valor por defecto</label>
+        <input
+          id="f-valorPorDefecto"
+          class="input"
+          type="text"
+          maxlength="60"
+          [ngModel]="draft().valorPorDefecto"
+          (ngModelChange)="updateDraft('valorPorDefecto', $event)"
+          name="valorPorDefecto"
+        />
+        <span class="field__hint">{{ draft().valorPorDefecto.length }} / 60</span>
+        <span class="field__hint">
+          Un operador (+, -, *, /) delante opera sobre el resultado; "?" pide el resultado al pedir la prueba;
+          "&amp;texto" antepone ese texto al resultado en el informe.
+        </span>
+      </div>
+
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label">Laboratorio externo</label>
+          <app-searchable-select
+            [items]="laboratoriosExternos()"
+            [value]="draft().laboratorioExternoId"
+            (valueChange)="updateDraft('laboratorioExternoId', $event)"
+          />
+        </div>
+        <div class="field">
+          <label class="field__label">Contenedor</label>
+          <app-searchable-select
+            [items]="contenedores()"
+            [value]="draft().contenedorId"
+            (valueChange)="updateDraft('contenedorId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Sexo / Especie</label>
+        <app-searchable-select
+          [items]="sexosEspecies()"
+          [value]="draft().sexoEspecieId"
+          (valueChange)="updateDraft('sexoEspecieId', $event)"
+        />
+        <span class="field__hint">Si se pide la prueba con un sexo/especie distinto, se avisa de la incompatibilidad.</span>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Opciones</h3>
+      <div class="checkbox-grid">
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().incluirEnCatalogo"
+            (ngModelChange)="updateDraft('incluirEnCatalogo', $event)"
+            name="incluirEnCatalogo"
+          />
+          Incluir en catálogo
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().incluirEvolucion"
+            (ngModelChange)="updateDraft('incluirEvolucion', $event)"
+            name="incluirEvolucion"
+          />
+          Incluir evolución
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().imprimirCodigoQr"
+            (ngModelChange)="updateDraft('imprimirCodigoQr', $event)"
+            name="imprimirCodigoQr"
+          />
+          Imprimir código QR
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().noImprimible"
+            (ngModelChange)="updateDraft('noImprimible', $event)"
+            name="noImprimible"
+          />
+          No imprimible
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" [ngModel]="draft().noActiva" (ngModelChange)="updateDraft('noActiva', $event)" name="noActiva" />
+          No activa
+        </label>
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            [ngModel]="draft().noPedibleIndividual"
+            (ngModelChange)="updateDraft('noPedibleIndividual', $event)"
+            name="noPedibleIndividual"
+          />
+          No pedible individual
+        </label>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Requerimientos y coste</h3>
+      <div class="drawer-form__row">
+        <div class="field">
+          <label class="field__label" for="f-codigoAuxiliar">Código auxiliar</label>
+          <input
+            id="f-codigoAuxiliar"
+            class="input"
+            type="text"
+            maxlength="50"
+            [ngModel]="draft().codigoAuxiliar"
+            (ngModelChange)="updateDraft('codigoAuxiliar', $event)"
+            name="codigoAuxiliar"
+          />
+          <span class="field__hint">Código de texto alternativo para pedir la prueba.</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="f-costo">Costo</label>
+          <div class="field-with-suffix">
+            <input
+              id="f-costo"
+              class="input"
+              type="number"
+              step="0.01"
+              min="0"
+              [ngModel]="draft().costo"
+              (ngModelChange)="updateDraft('costo', $event)"
+              name="costo"
+            />
+            <span class="field-with-suffix__unit">€</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-requerimientos">Requerimientos</label>
+        <textarea
+          id="f-requerimientos"
+          class="textarea"
+          [ngModel]="draft().requerimientos"
+          (ngModelChange)="updateDraft('requerimientos', $event)"
+          name="requerimientos"
+        ></textarea>
+        <span class="field__hint">Requisitos necesarios para realizar la prueba. Aparece en el Catálogo de Pruebas.</span>
+      </div>
+    </section>
+
+    <section class="tecnica-form__section">
+      <h3 class="section-title">Textos de edición</h3>
+      <div class="field">
+        <label class="field__label" for="f-cabeceraEdicion">Cabecera edición</label>
+        <textarea
+          id="f-cabeceraEdicion"
+          class="textarea"
+          [ngModel]="draft().cabeceraEdicion"
+          (ngModelChange)="updateDraft('cabeceraEdicion', $event)"
+          name="cabeceraEdicion"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label class="field__label" for="f-comentarioEdicion">Comentario edición</label>
+        <textarea
+          id="f-comentarioEdicion"
+          class="textarea"
+          [ngModel]="draft().comentarioEdicion"
+          (ngModelChange)="updateDraft('comentarioEdicion', $event)"
+          name="comentarioEdicion"
+        ></textarea>
+      </div>
+    </section>
+  </form>
+
+  <div drawerFooter>
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="requestClose()" (saved)="save()">
+      <app-tecnica-advanced-config
+        [tipoResultadoId]="draft().tipoResultadoId"
+        [tecnicaId]="draft().id"
+        [tecnicasAgrupadasIds]="draft().tecnicasAgrupadasIds"
+        (tecnicasAgrupadasIdsChange)="updateDraft('tecnicasAgrupadasIds', $any($event))"
+      />
+    </app-drawer-form-footer>
+  </div>
+</app-drawer>
