@@ -5,7 +5,8 @@
     "tipoMuestraId": "sangre",
     "volumen": "4 mL",
     "color": "#7c3aed",
-    "permanenciaSerotecaDias": null
+    "permanenciaSerotecaDias": null,
+    "destinosPreanaliticos": []
   },
   {
     "id": "tubo-seco",
@@ -13,7 +14,11 @@
     "tipoMuestraId": "sangre",
     "volumen": "5 mL",
     "color": "#dc2626",
-    "permanenciaSerotecaDias": 90
+    "permanenciaSerotecaDias": 90,
+    "destinosPreanaliticos": [
+      { "destinoId": "laboratorio-externo-norte", "prioridad": 1 },
+      { "destinoId": "impresora-recepcion", "prioridad": 2 }
+    ]
   },
   {
     "id": "tubo-citrato",
@@ -21,7 +26,8 @@
     "tipoMuestraId": "sangre",
     "volumen": "3.6 mL",
     "color": "#2563eb",
-    "permanenciaSerotecaDias": null
+    "permanenciaSerotecaDias": null,
+    "destinosPreanaliticos": []
   },
   {
     "id": "frasco-orina",
@@ -29,6 +35,7 @@
     "tipoMuestraId": "orina",
     "volumen": "60 mL",
     "color": "#ca8a04",
-    "permanenciaSerotecaDias": null
+    "permanenciaSerotecaDias": null,
+    "destinosPreanaliticos": []
   }
 ]

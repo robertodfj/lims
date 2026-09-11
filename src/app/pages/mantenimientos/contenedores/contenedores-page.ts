@@ -2,17 +2,19 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { CatalogService } from '../../../core/mock-db/catalog.service';
 import { DrawerFormFooter } from '../../../shared/drawer-form-footer/drawer-form-footer';
+import { DrawerStepNav } from '../../../shared/drawer-step-nav/drawer-step-nav';
 import { Drawer } from '../../../shared/drawer/drawer';
 import { EntityDrawerCrud } from '../../../shared/entity-drawer-crud/entity-drawer-crud';
 import { ExcelActions } from '../../../shared/excel-actions/excel-actions';
 import { Icon } from '../../../shared/icon/icon';
 import { CatalogItem, SearchableSelect } from '../../../shared/searchable-select/searchable-select';
+import { ContenedorAdvancedConfig } from './contenedor-advanced-config';
 import { Contenedor, createEmptyContenedor } from './contenedor.model';
 import { CONTENEDOR_REPOSITORY } from './contenedores.tokens';
 
 @Component({
   selector: 'app-contenedores-page',
-  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, ExcelActions],
+  imports: [FormsModule, Icon, Drawer, SearchableSelect, DrawerFormFooter, DrawerStepNav, ExcelActions, ContenedorAdvancedConfig],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './contenedores-page.html',
   styleUrl: './contenedores-page.css',

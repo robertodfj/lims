@@ -1,0 +1,62 @@
+<p class="avz__intro">
+  Destinos preanalíticos que podrá utilizar este contenedor. Por defecto un contenedor no
+  tiene ninguno asignado y admite cualquiera; en cuanto se asocie alguno, el contenedor solo
+  admitirá los de la columna "Asignados".
+</p>
+
+<div class="avz-dual">
+  <div class="avz-dual__col">
+    <h4 class="avz-dual__title">Disponibles</h4>
+    <ul class="avz-dual__list">
+      @for (destino of disponibles(); track destino.id) {
+        <li class="avz-dual__item">
+          <span>{{ destino.codigo }} — {{ destino.descripcion }}</span>
+          <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="agregar(destino.id)" aria-label="Agregar">
+            +
+          </button>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">No hay más destinos disponibles.</li>
+      }
+    </ul>
+  </div>
+
+  <div class="avz-dual__col">
+    <div class="avz-dual__col-header">
+      <h4 class="avz-dual__title">Destinos preanalíticos asignados</h4>
+      <button
+        type="button"
+        class="btn btn--secondary btn--sm"
+        [disabled]="asignados().length === 0"
+        [class.is-active]="editandoPrioridad()"
+        (click)="togglePrioridad()"
+      >
+        Prioridad
+      </button>
+    </div>
+    <ul class="avz-dual__list">
+      @for (entry of asignados(); track entry.item.destinoId) {
+        <li class="avz-dual__item">
+          <span>{{ entry.destino.codigo }} — {{ entry.destino.descripcion }}</span>
+          <span class="avz-dual__item-actions">
+            @if (editandoPrioridad()) {
+              <input
+                class="input avz-input--xs"
+                type="number"
+                min="1"
+                placeholder="Nº"
+                [ngModel]="entry.item.prioridad"
+                (ngModelChange)="updatePrioridad(entry.item.destinoId, $event)"
+              />
+            }
+            <button type="button" class="btn btn--ghost btn--icon btn--sm" (click)="quitar(entry.item.destinoId)" aria-label="Quitar">
+              ×
+            </button>
+          </span>
+        </li>
+      } @empty {
+        <li class="avz-dual__empty">Ninguno asignado todavía: se admite cualquier destino.</li>
+      }
+    </ul>
+  </div>
+</div>

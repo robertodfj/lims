@@ -86,6 +86,7 @@
 </div>
 
 <app-drawer [open]="drawerOpen()" [title]="draft().id ? 'Editar contenedor' : 'Nuevo contenedor'" (closed)="closeDrawer()">
+  <app-drawer-step-nav drawerStepNav [position]="crud.position()" (previous)="crud.openPrevious()" (next)="crud.openNext()" />
   <form class="drawer-form" (ngSubmit)="save()">
     <div class="field">
       <label class="field__label" for="f-nombre">Contenedor <span class="field__required">*</span></label>
@@ -156,6 +157,11 @@
   </form>
 
   <div drawerFooter>
-    <app-drawer-form-footer [saving]="saving()" (cancelled)="closeDrawer()" (saved)="save()" />
+    <app-drawer-form-footer [saving]="saving()" [hasCustomAdvanced]="true" (cancelled)="closeDrawer()" (saved)="save()">
+      <app-contenedor-advanced-config
+        [destinosPreanaliticos]="draft().destinosPreanaliticos"
+        (destinosPreanaliticosChange)="updateDraft('destinosPreanaliticos', $any($event))"
+      />
+    </app-drawer-form-footer>
   </div>
 </app-drawer>
